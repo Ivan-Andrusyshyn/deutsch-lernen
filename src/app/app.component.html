@@ -1,0 +1,209 @@
+<div class="app-shell">
+  <header class="topbar">
+    <a class="brand" href="#start" aria-label="Wortzeit — на головну">
+      <span class="brand-mark">W</span>
+      <span>wortzeit<span class="brand-period">.</span></span>
+    </a>
+    <div class="topbar-note"><span class="online-dot"></span> Німецька — крок за кроком</div>
+    <div class="level-pill"><span>✦</span> Рівень A2</div>
+  </header>
+
+  <main id="start">
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">ВИВЧАЙ НІМЕЦЬКУ ІЗ ЗАДОВОЛЕННЯМ</p>
+        <h1>Німецька,<br />що <span>залишається.</span></h1>
+        <p class="hero-description">
+          Нові слова, корисні фрази та короткі тексти. Навчайся у власному темпі — ми збережемо твій прогрес.
+        </p>
+        <button class="primary-button hero-button" type="button" (click)="startLearning()">
+          <span>Почати навчання</span><span aria-hidden="true">→</span>
+        </button>
+        <div class="social-proof"><span class="sparkle">✳</span> Навіть 5 слів на день — це вже успіх</div>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="sun-shape"></div>
+        <div class="floating-note note-top"><span>der Morgen</span><small>ранок</small></div>
+        <div class="book-illustration">
+          <div class="book-page book-back"></div>
+          <div class="book-page book-front">
+            <span class="book-label">СЛОВО<br />ЗА СЛОВОМ</span>
+            <span class="book-flower">✳</span>
+            <span class="book-caption">Мій щоденник<br />німецької</span>
+          </div>
+        </div>
+        <div class="floating-note note-bottom"><span>Weiter so!</span><small>Так тримати!</small></div>
+        <span class="art-star star-one">✳</span>
+        <span class="art-star star-two">✦</span>
+      </div>
+    </section>
+
+    <section class="progress-panel" aria-label="Твій прогрес">
+      <div class="progress-heading">
+        <div>
+          <p class="section-kicker">ТВІЙ ПРОГРЕС</p>
+          <h2>У тебе все виходить <span class="tiny-spark">✦</span></h2>
+        </div>
+        <div class="streak-badge"><span aria-hidden="true">🔥</span><strong>{{ streak }}</strong><span>дн. поспіль</span></div>
+      </div>
+      <p class="progress-message">{{ progressMessage }}</p>
+      <div class="progress-track" role="progressbar" [attr.aria-valuenow]="progressPercent" aria-valuemin="0" aria-valuemax="100" [attr.aria-label]="'Вивчено ' + progressPercent + '%'">
+        <span [style.width.%]="progressPercent"></span>
+      </div>
+      <div class="progress-foot">
+        <span><strong>{{ learnedCount }}</strong> із {{ words.length }} слів вивчено</span>
+        <span>{{ progressPercent }}%</span>
+      </div>
+      <div class="stats-row">
+        <div class="stat-item"><span class="stat-icon peach">✦</span><span><strong>{{ learnedCount }}</strong><small>вивчено слів</small></span></div>
+        <div class="stat-item"><span class="stat-icon mint">◷</span><span><strong>{{ todayCount }} / {{ dailyGoal }}</strong><small>мета на сьогодні</small></span></div>
+        <div class="stat-item"><span class="stat-icon lilac">♡</span><span><strong>{{ favorites.size }}</strong><small>в обраному</small></span></div>
+      </div>
+    </section>
+
+    <section id="learning" class="learning-section" aria-label="Навчальні матеріали">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">ТВОЯ МІНІПРАКТИКА</p>
+          <h2>Що вивчатимемо?</h2>
+        </div>
+        <span class="total-pill">350 слів · A2</span>
+      </div>
+
+      <nav class="tab-list" aria-label="Обрати матеріал">
+        <button type="button" [class.active]="activeTab === 'words'" (click)="selectTab('words')"><span>✦</span> Слова <span class="tab-count">350</span></button>
+        <button type="button" [class.active]="activeTab === 'phrases'" (click)="selectTab('phrases')"><span>〝</span> Фрази <span class="tab-count">{{ phrases.length }}</span></button>
+        <button type="button" [class.active]="activeTab === 'texts'" (click)="selectTab('texts')"><span>▤</span> Тексти <span class="tab-count">{{ readingTexts.length }}</span></button>
+      </nav>
+
+      <div *ngIf="feedback" class="feedback-banner" role="status">
+        <span>✨</span><p>{{ feedback }}</p><button type="button" aria-label="Закрити повідомлення" (click)="feedback = ''">×</button>
+      </div>
+      <div *ngIf="storageMessage" class="storage-message" role="status">{{ storageMessage }}</div>
+
+      <ng-container *ngIf="activeTab === 'words'">
+        <article class="daily-card" *ngIf="nextWord; else allWordsLearned">
+          <div class="daily-card-top">
+            <div class="daily-label"><span class="daily-dot"></span> КАРТКА СЛОВА</div>
+          </div>
+          <div class="word-slider" (touchstart)="onWordTouchStart($event)" (touchend)="onWordTouchEnd($event)">
+            <div class="daily-word">
+              <span class="word-category">{{ currentWord.category }}</span>
+              <h3>{{ currentWord.word }}</h3>
+              <p class="word-hint" *ngIf="showAnswer">{{ currentWord.translation }}</p>
+              <p class="word-hint hidden-hint" *ngIf="!showAnswer">Спробуй пригадати переклад або відкрий підказку</p>
+            </div>
+            <div class="word-example">
+              <div><span class="example-label">СЛОВОСПОЛУЧЕННЯ</span><p>{{ currentWord.phrase }}</p></div>
+              <div><span class="example-label">У КОНТЕКСТІ</span><p>{{ currentWord.example }}</p></div>
+            </div>
+          </div>
+          <div class="daily-actions">
+            <button *ngIf="!showAnswer" class="outline-button" type="button" (click)="toggleAnswer()">Показати переклад <span>⌄</span></button>
+            <ng-container *ngIf="showAnswer">
+              <button class="outline-button" type="button" (click)="toggleAnswer()">Повторити пізніше</button>
+              <button class="primary-button" type="button" (click)="markLearned(currentWord)">Я запам’ятав(-ла) <span>✓</span></button>
+            </ng-container>
+            <span class="encouragement-mini">У тебе все вийде! <span>✦</span></span>
+          </div>
+          <div class="slider-controls" aria-label="Перемикання карток">
+            <button type="button" aria-label="Попереднє слово" (click)="showPreviousWord()">←</button>
+            <span>{{ wordIndex + 1 }} / {{ words.length }}</span>
+            <div class="slider-progress"><span [style.width.%]="((wordIndex + 1) / words.length) * 100"></span></div>
+            <button type="button" aria-label="Наступне слово" (click)="showNextWord()">→</button>
+            <span class="swipe-hint">Гортай картки свайпом</span>
+          </div>
+        </article>
+        <ng-template #allWordsLearned>
+          <article class="complete-card">
+            <span class="complete-icon">🎉</span>
+            <div><h3>Увесь словник пройдено!</h3><p>Неймовірний результат. Повтори обрані слова або почитай тексти для закріплення.</p></div>
+          </article>
+        </ng-template>
+
+        <div class="library-heading">
+          <div><h3>Словник A2</h3><p>Обирай слова, які хочеш повторити</p></div>
+          <label class="search-box">
+            <span aria-hidden="true">⌕</span>
+            <input type="search" [(ngModel)]="searchQuery" placeholder="Знайти слово…" aria-label="Пошук слів" />
+          </label>
+        </div>
+        <div class="category-list" aria-label="Категорії слів">
+          <button *ngFor="let category of categories" type="button" [class.selected]="activeCategory === category" (click)="activeCategory = category">
+            {{ category }}
+          </button>
+        </div>
+        <div class="word-grid">
+          <article class="vocab-card" *ngFor="let word of visibleWords">
+            <div class="vocab-card-top">
+              <span class="word-category">{{ word.category }}</span>
+              <button class="favorite-button" [class.favorite]="isFavorite(word)" type="button" (click)="toggleFavorite(word)" [attr.aria-label]="isFavorite(word) ? 'Прибрати з обраного' : 'Додати до обраного'">
+                {{ isFavorite(word) ? '♥' : '♡' }}
+              </button>
+            </div>
+            <h4>{{ word.word }}</h4>
+            <p class="vocab-translation">{{ word.translation }}</p>
+            <div class="vocab-example"><span>{{ word.phrase }}</span><small>{{ word.example }}</small></div>
+            <button class="learned-button" [class.is-learned]="isLearned(word)" type="button" (click)="markLearned(word)">
+              <span>{{ isLearned(word) ? '✓' : '+' }}</span> {{ isLearned(word) ? 'Вивчено' : 'Позначити вивченим' }}
+            </button>
+          </article>
+        </div>
+        <p class="empty-state" *ngIf="visibleWords.length === 0">Нічого не знайдено. Зміни запит або категорію.</p>
+      </ng-container>
+
+      <ng-container *ngIf="activeTab === 'phrases'">
+        <div class="content-intro">
+          <h3>Фрази на щодень</h3>
+          <p>Готові вислови для спілкування, подорожей і маленьких перемог.</p>
+        </div>
+        <div class="phrase-grid">
+          <article class="phrase-card" *ngFor="let phrase of phrases">
+            <span class="phrase-quote">„</span>
+            <h3>{{ phrase.german }}</h3>
+            <p class="vocab-translation">{{ phrase.translation }}</p>
+            <div class="phrase-example"><span>ПРИКЛАД</span><p>{{ phrase.example }}</p></div>
+            <button type="button" class="phrase-practice" (click)="showPhraseFeedback(phrase)">Повторити вголос <span>↗</span></button>
+          </article>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="activeTab === 'texts'">
+        <div class="content-intro">
+          <h3>Читаємо й розуміємо</h3>
+          <p>Короткі історії рівня A2 з перекладом і запитаннями для самоперевірки.</p>
+        </div>
+        <div class="reading-list">
+          <article class="reading-card" *ngFor="let text of readingTexts; let i = index">
+            <button class="reading-toggle" type="button" (click)="toggleText(i)" [attr.aria-expanded]="openText === i">
+              <span class="reading-icon">{{ i === 0 ? '☀' : i === 1 ? '✈' : '♡' }}</span>
+              <span class="reading-title"><small>{{ text.level }}</small><strong>{{ text.title }}</strong></span>
+              <span class="reading-action">{{ openText === i ? 'Згорнути −' : 'Читати +' }}</span>
+            </button>
+            <div class="reading-content" *ngIf="openText === i">
+              <p class="reading-german">{{ text.german }}</p>
+              <details class="translation-details"><summary>Показати переклад</summary><p>{{ text.translation }}</p></details>
+              <div class="comprehension">
+                <h4>Перевір себе</h4>
+                <div *ngFor="let item of text.questions"><p>{{ item.question }}</p><details><summary>Показати відповідь</summary><p>{{ item.answer }}</p></details></div>
+              </div>
+              <button class="primary-button reading-done" type="button" (click)="showTextFeedback(text)">Я прочитав(-ла) <span>✓</span></button>
+            </div>
+          </article>
+        </div>
+      </ng-container>
+    </section>
+
+    <section class="quote-banner">
+      <span class="quote-mark">“</span>
+      <div><p>{{ encouragement }}</p><small>Ти робиш більше, ніж здається. Weiter so!</small></div>
+      <span class="quote-flower" aria-hidden="true">✳</span>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <a class="brand footer-brand" href="#start"><span class="brand-mark">W</span><span>wortzeit<span class="brand-period">.</span></span></a>
+    <p>Маленькі слова. Великі можливості.</p>
+    <span>Прогрес зберігається у твоєму браузері <span class="footer-heart">♡</span></span>
+  </footer>
+</div>
