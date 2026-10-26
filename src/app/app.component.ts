@@ -1,5 +1,5 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, ElementRef, Inject, OnInit, PLATFORM_ID, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Phrase, ReadingText, phrases, readingTexts, vocabulary, WordCard } from './vocabulary';
 
@@ -19,6 +19,8 @@ type LearningTab = 'words' | 'phrases' | 'texts';
   styleUrl: './app.component.css',
 })
 export class AppComponent implements OnInit {
+  @ViewChild('wordSlide') private wordSlide?: ElementRef<HTMLElement>;
+
   readonly words = vocabulary;
   readonly phrases = phrases;
   readonly readingTexts = readingTexts;
@@ -46,6 +48,7 @@ export class AppComponent implements OnInit {
   wordIndex = 0;
   private isBrowser = false;
   private touchStartX: number | null = null;
+  private wordCardAnimation?: Animation;
 
   constructor(@Inject(PLATFORM_ID) private readonly platformId: object) {}
 
@@ -133,7 +136,7 @@ export class AppComponent implements OnInit {
   }
 
   get progressMessage(): string {
-    if (this.progressPercent === 100) return 'Усі 350 слів вивчено — це неймовірно!';
+    if (this.progressPercent === 100) return `Усі ${this.words.length} слів вивчено — це неймовірно!`;
     if (this.learnedCount === 0) return 'Почни з першого слова — у тебе все вийде!';
     if (this.todayCount >= this.dailyGoal) return 'Денну ціль виконано. Ти неймовірний(-а)!';
     return 'Маленькі кроки щодня — і німецька стане звичкою.';
@@ -163,6 +166,7 @@ export class AppComponent implements OnInit {
       this.wordIndex = this.words.indexOf(next);
       this.showAnswer = false;
       this.feedback = '';
+      this.animateWordTransition();
     } else {
       this.currentWord = this.words[0];
       this.wordIndex = 0;
@@ -203,6 +207,27 @@ export class AppComponent implements OnInit {
     this.currentWord = this.words[index];
     this.showAnswer = false;
     this.feedback = '';
+    this.animateWordTransition();
+  }
+
+  private animateWordTransition(): void {
+    if (!isPlatformBrowser(this.platformId) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return;
+    }
+
+    this.wordCardAnimation?.cancel();
+
+    requestAnimationFrame(() => {
+      const slide = this.wordSlide?.nativeElement;
+      if (!slide?.isConnected) return;
+      this.wordCardAnimation = slide.animate(
+        [
+          { opacity: 0.72 },
+          { opacity: 1 },
+        ],
+        { duration: 180, easing: 'ease-out' },
+      );
+    });
   }
 
   markLearned(word: WordCard): void {
@@ -219,6 +244,7 @@ export class AppComponent implements OnInit {
     this.wordIndex = this.words.indexOf(this.currentWord);
     this.showAnswer = false;
     this.feedback = this.encouragement;
+    if (next) this.animateWordTransition();
     this.saveProgress();
   }
 

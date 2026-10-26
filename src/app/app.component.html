@@ -67,11 +67,11 @@
           <p class="section-kicker">ТВОЯ МІНІПРАКТИКА</p>
           <h2>Що вивчатимемо?</h2>
         </div>
-        <span class="total-pill">350 слів · A2</span>
+        <span class="total-pill">{{ words.length }} слів · A2</span>
       </div>
 
       <nav class="tab-list" aria-label="Обрати матеріал">
-        <button type="button" [class.active]="activeTab === 'words'" (click)="selectTab('words')"><span>✦</span> Слова <span class="tab-count">350</span></button>
+        <button type="button" [class.active]="activeTab === 'words'" (click)="selectTab('words')"><span>✦</span> Слова <span class="tab-count">{{ words.length }}</span></button>
         <button type="button" [class.active]="activeTab === 'phrases'" (click)="selectTab('phrases')"><span>〝</span> Фрази <span class="tab-count">{{ phrases.length }}</span></button>
         <button type="button" [class.active]="activeTab === 'texts'" (click)="selectTab('texts')"><span>▤</span> Тексти <span class="tab-count">{{ readingTexts.length }}</span></button>
       </nav>
@@ -87,15 +87,17 @@
             <div class="daily-label"><span class="daily-dot"></span> КАРТКА СЛОВА</div>
           </div>
           <div class="word-slider" (touchstart)="onWordTouchStart($event)" (touchend)="onWordTouchEnd($event)">
-            <div class="daily-word">
-              <span class="word-category">{{ currentWord.category }}</span>
-              <h3>{{ currentWord.word }}</h3>
-              <p class="word-hint" *ngIf="showAnswer">{{ currentWord.translation }}</p>
-              <p class="word-hint hidden-hint" *ngIf="!showAnswer">Спробуй пригадати переклад або відкрий підказку</p>
-            </div>
-            <div class="word-example">
-              <div><span class="example-label">СЛОВОСПОЛУЧЕННЯ</span><p>{{ currentWord.phrase }}</p></div>
-              <div><span class="example-label">У КОНТЕКСТІ</span><p>{{ currentWord.example }}</p></div>
+            <div #wordSlide class="word-slide">
+              <div class="daily-word">
+                <span class="word-category">{{ currentWord.category }}</span>
+                <h3>{{ currentWord.word }}</h3>
+                <p class="word-hint" *ngIf="showAnswer">{{ currentWord.translation }}</p>
+                <p class="word-hint hidden-hint" *ngIf="!showAnswer">Спробуй пригадати переклад або відкрий підказку</p>
+              </div>
+              <div class="word-example">
+                <div><span class="example-label">СЛОВОСПОЛУЧЕННЯ</span><p>{{ currentWord.phrase }}</p></div>
+                <div><span class="example-label">У КОНТЕКСТІ</span><p>{{ currentWord.example }}</p></div>
+              </div>
             </div>
           </div>
           <div class="daily-actions">

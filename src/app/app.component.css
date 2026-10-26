@@ -567,23 +567,6 @@ main,
   user-select: none;
 }
 
-.daily-word,
-.word-example {
-  animation: card-arrive 220ms ease-out;
-}
-
-@keyframes card-arrive {
-  from {
-    opacity: 0.45;
-    transform: translateX(8px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
 .slider-controls {
   display: flex;
   align-items: center;

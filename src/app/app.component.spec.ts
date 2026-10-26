@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { AppComponent } from './app.component';
 import { phrases, readingTexts, vocabulary } from './vocabulary';
 
@@ -15,7 +15,7 @@ describe('AppComponent', () => {
 
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('h1')?.textContent).toContain('залишається');
-    expect(compiled.querySelector('.total-pill')?.textContent).toContain('350 слів');
+    expect(compiled.querySelector('.total-pill')?.textContent).toContain('500 слів');
   });
 
   it('tracks learned words and daily progress', () => {
@@ -39,6 +39,39 @@ describe('AppComponent', () => {
     app.showPreviousWord();
     expect(app.currentWord).toEqual(vocabulary[vocabulary.length - 1]);
   });
+
+  it('animates card changes when moving through words', fakeAsync(() => {
+    const fixture = TestBed.createComponent(AppComponent);
+    fixture.detectChanges();
+    const slide = fixture.nativeElement.querySelector('.word-slide') as HTMLElement;
+    const animation = jasmine.createSpyObj<Animation>('animation', ['cancel']);
+    spyOn(slide, 'animate').and.returnValue(animation);
+
+    fixture.componentInstance.showNextWord();
+    fixture.detectChanges();
+    tick(16);
+    expect(slide.querySelector('h3')?.textContent).toContain(vocabulary[1].word);
+    expect(fixture.nativeElement.querySelectorAll('.word-slide-outgoing').length).toBe(0);
+    expect(slide.animate).toHaveBeenCalledWith(
+      [
+        { opacity: 0.72 },
+        { opacity: 1 },
+      ],
+      { duration: 180, easing: 'ease-out' },
+    );
+    (slide.animate as jasmine.Spy).calls.reset();
+
+    fixture.componentInstance.showPreviousWord();
+    fixture.detectChanges();
+    tick(16);
+    expect(slide.animate).toHaveBeenCalledWith(
+      [
+        { opacity: 0.72 },
+        { opacity: 1 },
+      ],
+      { duration: 180, easing: 'ease-out' },
+    );
+  }));
 
   it('starts a lesson with the next unlearned word and clears library filters', () => {
     const fixture = TestBed.createComponent(AppComponent);
@@ -215,10 +248,13 @@ describe('AppComponent', () => {
     expect(phrases[0].translation).toBe('Доброго ранку!');
   });
 
-  it('includes exactly 350 unique A2 vocabulary entries', () => {
-    expect(vocabulary.length).toBe(350);
-    expect(new Set(vocabulary.map((word) => word.word)).size).toBe(350);
-    expect(new Set(vocabulary.map((word) => word.id)).size).toBe(350);
+  it('includes exactly 500 unique A2 vocabulary entries with complete study examples', () => {
+    expect(vocabulary.length).toBe(500);
+    expect(new Set(vocabulary.map((word) => word.word)).size).toBe(500);
+    expect(new Set(vocabulary.map((word) => word.id)).size).toBe(500);
+    expect(vocabulary.every((word) => word.translation && word.category && word.phrase && word.example)).toBeTrue();
+    expect(vocabulary.some((word) => word.category === 'Одяг і покупки')).toBeTrue();
+    expect(vocabulary.some((word) => word.category === 'Природа й довкілля')).toBeTrue();
   });
 
   it('keeps vocabulary translations and categories in Ukrainian', () => {
@@ -231,7 +267,7 @@ describe('AppComponent', () => {
 
   it('includes practice phrases and reading texts', () => {
     expect(phrases.length).toBeGreaterThan(0);
-    expect(readingTexts.length).toBeGreaterThan(0);
+    expect(readingTexts.length).toBe(8);
     expect(readingTexts.every((text) => text.questions.length > 0)).toBeTrue();
   });
 });
