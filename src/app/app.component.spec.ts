@@ -29,6 +29,97 @@ describe('AppComponent', () => {
     expect(app.progressPercent).toBe(1);
   });
 
+  it('moves to the next sequential card after learning the current word', () => {
+    const app = TestBed.createComponent(AppComponent).componentInstance;
+    app.currentWord = vocabulary[10];
+    app.wordIndex = 10;
+
+    app.markLearned(vocabulary[10]);
+
+    expect(app.currentWord).toEqual(vocabulary[11]);
+    expect(app.wordIndex).toBe(11);
+  });
+
+  it('keeps the active card when learning a different word from the library', () => {
+    const app = TestBed.createComponent(AppComponent).componentInstance;
+    app.currentWord = vocabulary[10];
+    app.wordIndex = 10;
+
+    app.markLearned(vocabulary[20]);
+
+    expect(app.currentWord).toEqual(vocabulary[10]);
+    expect(app.wordIndex).toBe(10);
+  });
+
+  it('celebrates the daily goal once when the fifth distinct word is learned', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const app = fixture.componentInstance;
+
+    vocabulary.slice(0, app.dailyGoal - 1).forEach((word) => app.markLearned(word));
+    expect(app.showDailyGoalCelebration).toBeFalse();
+
+    app.markLearned(vocabulary[app.dailyGoal - 1]);
+    fixture.detectChanges();
+
+    expect(app.todayCount).toBe(app.dailyGoal);
+    expect(app.showDailyGoalCelebration).toBeTrue();
+    expect(fixture.nativeElement.querySelector('[role="dialog"]')?.textContent).toContain('План-мінімум виконано');
+    expect(fixture.nativeElement.querySelector('.goal-bear')?.textContent).toContain('🐻');
+
+    const continueButton = fixture.nativeElement.querySelector('.goal-continue') as HTMLButtonElement;
+    continueButton.click();
+    fixture.detectChanges();
+    expect(app.showDailyGoalCelebration).toBeFalse();
+
+    app.markLearned(vocabulary[app.dailyGoal]);
+    expect(app.showDailyGoalCelebration).toBeFalse();
+  });
+
+  it('shows daily vocabulary counts and words in the selected calendar date', () => {
+    const app = TestBed.createComponent(AppComponent).componentInstance;
+    app.calendarMonth = new Date(2026, 9, 1);
+    app.dailyProgress = {
+      '2026-10-01': [vocabulary[0].id],
+      '2026-10-02': [vocabulary[0].id, vocabulary[1].id, vocabulary[2].id],
+      '2026-10-03': vocabulary.slice(0, 5).map((word) => word.id),
+    };
+
+    const lowActivity = app.calendarDays.find((day) => day?.key === '2026-10-01');
+    const mediumActivity = app.calendarDays.find((day) => day?.key === '2026-10-02');
+    const highActivity = app.calendarDays.find((day) => day?.key === '2026-10-03');
+    expect(lowActivity?.intensity).toBe('low');
+    expect(mediumActivity?.intensity).toBe('medium');
+    expect(highActivity?.intensity).toBe('high');
+
+    app.selectCalendarDay(mediumActivity!);
+    expect(app.selectedDateKey).toBe('2026-10-02');
+    expect(app.selectedDayCount).toBe(3);
+    expect(app.selectedDayCountLabel).toBe('3 слова');
+    expect(app.selectedDayWords).toEqual(vocabulary.slice(0, 3));
+    expect(app.calendarMonthWordCount).toBe(9);
+    expect(app.calendarMonthWordCountLabel).toBe('9 слів');
+    expect(app.calendarMonthActiveDays).toBe(3);
+    expect(app.calendarMonthActiveDaysLabel).toBe('3 дні навчання');
+  });
+
+  it('navigates the language diary by month and does not select future dates', () => {
+    const app = TestBed.createComponent(AppComponent).componentInstance;
+    app.calendarMonth = new Date(2026, 9, 1);
+    app.changeCalendarMonth(-1);
+    expect(app.calendarMonth).toEqual(new Date(2026, 8, 1));
+    expect(app.selectedDateKey).toBe('2026-09-01');
+
+    app.changeCalendarMonth(1);
+    expect(app.calendarMonth).toEqual(new Date(2026, 9, 1));
+    expect(app.selectedDateKey).toBe('2026-10-01');
+    expect(app.canGoToNextCalendarMonth).toBeFalse();
+
+    const futureDay = app.calendarDays.find((day) => day?.isFuture);
+    expect(futureDay).toBeDefined();
+    app.selectCalendarDay(futureDay!);
+    expect(app.selectedDateKey).toBe('2026-10-01');
+  });
+
   it('moves through vocabulary cards in both directions', () => {
     const app = TestBed.createComponent(AppComponent).componentInstance;
 

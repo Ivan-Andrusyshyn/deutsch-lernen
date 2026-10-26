@@ -11,6 +11,16 @@ interface SavedProgress {
 
 type LearningTab = 'words' | 'phrases' | 'texts';
 
+interface CalendarDay {
+  key: string;
+  day: number;
+  count: number;
+  intensity: 'none' | 'low' | 'medium' | 'high';
+  isToday: boolean;
+  isSelected: boolean;
+  isFuture: boolean;
+}
+
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -25,6 +35,7 @@ export class AppComponent implements OnInit {
   readonly phrases = phrases;
   readonly readingTexts = readingTexts;
   readonly dailyGoal = 5;
+  readonly weekdays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
   readonly categories = ['Усі слова', ...new Set(vocabulary.map((word) => word.category))];
   readonly encouragements = [
     'Чудова робота! Кожен крок наближає тебе до вільної німецької.',
@@ -40,10 +51,13 @@ export class AppComponent implements OnInit {
   learned = new Set<string>();
   favorites = new Set<string>();
   dailyProgress: Record<string, string[]> = {};
+  calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  selectedDateKey = this.dateKey(new Date());
   currentWord = vocabulary[0];
   showAnswer = false;
   feedback = '';
   storageMessage = '';
+  showDailyGoalCelebration = false;
   openText = -1;
   wordIndex = 0;
   private isBrowser = false;
@@ -122,6 +136,96 @@ export class AppComponent implements OnInit {
     return this.dailyProgress[this.todayKey]?.length ?? 0;
   }
 
+  get calendarMonthLabel(): string {
+    return this.calendarMonth.toLocaleDateString('uk-UA', { month: 'long', year: 'numeric' });
+  }
+
+  get calendarDays(): (CalendarDay | null)[] {
+    const year = this.calendarMonth.getFullYear();
+    const month = this.calendarMonth.getMonth();
+    const firstWeekday = (new Date(year, month, 1).getDay() + 6) % 7;
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const cellCount = Math.ceil((firstWeekday + daysInMonth) / 7) * 7;
+    const today = this.todayKey;
+
+    return Array.from({ length: cellCount }, (_, index) => {
+      const day = index - firstWeekday + 1;
+      if (day < 1 || day > daysInMonth) return null;
+
+      const key = this.dateKey(new Date(year, month, day));
+      const count = new Set(this.dailyProgress[key] ?? []).size;
+      const intensity: CalendarDay['intensity'] =
+        count === 0 ? 'none' : count <= 2 ? 'low' : count <= 4 ? 'medium' : 'high';
+
+      return {
+        key,
+        day,
+        count,
+        intensity,
+        isToday: key === today,
+        isSelected: key === this.selectedDateKey,
+        isFuture: key > today,
+      };
+    });
+  }
+
+  get selectedDayLabel(): string {
+    const [year, month, day] = this.selectedDateKey.split('-').map(Number);
+    return new Date(year, month - 1, day).toLocaleDateString('uk-UA', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+  }
+
+  get selectedDayWords(): WordCard[] {
+    const learnedIds = new Set(this.dailyProgress[this.selectedDateKey] ?? []);
+    return this.words.filter((word) => learnedIds.has(word.id));
+  }
+
+  get selectedDayCount(): number {
+    return this.selectedDayWords.length;
+  }
+
+  get selectedDayCountLabel(): string {
+    return `${this.selectedDayCount} ${this.wordNoun(this.selectedDayCount)}`;
+  }
+
+  get canGoToNextCalendarMonth(): boolean {
+    const currentMonth = new Date();
+    return (
+      this.calendarMonth.getFullYear() < currentMonth.getFullYear() ||
+      (this.calendarMonth.getFullYear() === currentMonth.getFullYear() &&
+        this.calendarMonth.getMonth() < currentMonth.getMonth())
+    );
+  }
+
+  get calendarMonthWordCount(): number {
+    const monthPrefix = `${this.calendarMonth.getFullYear()}-${String(this.calendarMonth.getMonth() + 1).padStart(2, '0')}-`;
+    return Object.entries(this.dailyProgress).reduce(
+      (total, [date, ids]) => total + (date.startsWith(monthPrefix) ? new Set(ids).size : 0),
+      0,
+    );
+  }
+
+  get calendarMonthActiveDays(): number {
+    const monthPrefix = `${this.calendarMonth.getFullYear()}-${String(this.calendarMonth.getMonth() + 1).padStart(2, '0')}-`;
+    return Object.entries(this.dailyProgress).filter(
+      ([date, ids]) => date.startsWith(monthPrefix) && ids.length > 0,
+    ).length;
+  }
+
+  get calendarMonthActiveDaysLabel(): string {
+    const count = this.calendarMonthActiveDays;
+    return `${count} ${this.dayNoun(count)} навчання`;
+  }
+
+  get calendarMonthWordCountLabel(): string {
+    const count = this.calendarMonthWordCount;
+    return `${count} ${this.wordNoun(count)}`;
+  }
+
   get streak(): number {
     const days = new Set(Object.keys(this.dailyProgress).filter((date) => this.dailyProgress[date].length > 0));
     const cursor = new Date();
@@ -153,6 +257,16 @@ export class AppComponent implements OnInit {
   selectTab(tab: LearningTab): void {
     this.activeTab = tab;
     this.feedback = '';
+  }
+
+  changeCalendarMonth(offset: -1 | 1): void {
+    this.calendarMonth = new Date(this.calendarMonth.getFullYear(), this.calendarMonth.getMonth() + offset, 1);
+    this.selectedDateKey = this.dateKey(this.calendarMonth);
+  }
+
+  selectCalendarDay(day: CalendarDay): void {
+    if (day.isFuture) return;
+    this.selectedDateKey = day.key;
   }
 
   startLearning(): void {
@@ -236,16 +350,26 @@ export class AppComponent implements OnInit {
       return;
     }
 
+    const isCurrentWord = word.id === this.currentWord.id;
+    const previousTodayCount = this.todayCount;
     this.learned.add(word.id);
     const today = this.todayKey;
     this.dailyProgress[today] = [...new Set([...(this.dailyProgress[today] ?? []), word.id])];
-    const next = this.nextUnlearnedWord();
-    this.currentWord = next ?? word;
-    this.wordIndex = this.words.indexOf(this.currentWord);
-    this.showAnswer = false;
+    if (previousTodayCount < this.dailyGoal && this.todayCount >= this.dailyGoal) {
+      this.showDailyGoalCelebration = true;
+    }
+    if (isCurrentWord) {
+      this.wordIndex = (this.wordIndex + 1) % this.words.length;
+      this.currentWord = this.words[this.wordIndex];
+      this.showAnswer = false;
+      if (this.nextWord) this.animateWordTransition();
+    }
     this.feedback = this.encouragement;
-    if (next) this.animateWordTransition();
     this.saveProgress();
+  }
+
+  continueAfterDailyGoal(): void {
+    this.showDailyGoalCelebration = false;
   }
 
   toggleFavorite(word: WordCard): void {
@@ -290,6 +414,24 @@ export class AppComponent implements OnInit {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+  }
+
+  private wordNoun(count: number): string {
+    const lastTwoDigits = count % 100;
+    if (lastTwoDigits >= 11 && lastTwoDigits <= 14) return 'слів';
+    const lastDigit = count % 10;
+    if (lastDigit === 1) return 'слово';
+    if (lastDigit >= 2 && lastDigit <= 4) return 'слова';
+    return 'слів';
+  }
+
+  private dayNoun(count: number): string {
+    const lastTwoDigits = count % 100;
+    if (lastTwoDigits >= 11 && lastTwoDigits <= 14) return 'днів';
+    const lastDigit = count % 10;
+    if (lastDigit === 1) return 'день';
+    if (lastDigit >= 2 && lastDigit <= 4) return 'дні';
+    return 'днів';
   }
 
   private nextUnlearnedWord(): WordCard | undefined {
