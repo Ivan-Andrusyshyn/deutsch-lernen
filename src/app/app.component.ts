@@ -9,6 +9,14 @@ interface SavedProgress {
   dailyProgress: Record<string, string[]>;
 }
 
+type LearningLanguage = 'de' | 'en';
+type AppTheme = 'light' | 'dark';
+
+interface SavedSettings {
+  learningLanguage: LearningLanguage;
+  theme: AppTheme;
+}
+
 type LearningTab = 'words' | 'phrases' | 'texts';
 
 interface CalendarDay {
@@ -38,14 +46,16 @@ export class AppComponent implements OnInit {
   readonly weekdays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
   readonly categories = ['Усі слова', ...new Set(vocabulary.map((word) => word.category))];
   readonly encouragements = [
-    'Чудова робота! Кожен крок наближає тебе до вільної німецької.',
+    'Чудова робота! Кожен крок наближає тебе до мети.',
     'Супер! Це слово вже у твоєму активному словнику.',
     'Так тримати! Регулярна практика — найкращий шлях до успіху.',
-    'Wunderbar! Сьогодні ти чудово просунувся(-лася).',
+    'Чудово! Сьогодні ти помітно просунувся(-лася).',
     'Молодець! Ще одне слово тепер твоє.',
   ];
 
   activeTab: LearningTab = 'words';
+  learningLanguage: LearningLanguage = 'de';
+  theme: AppTheme = 'light';
   activeCategory = 'Усі слова';
   searchQuery = '';
   learned = new Set<string>();
@@ -67,16 +77,79 @@ export class AppComponent implements OnInit {
   constructor(@Inject(PLATFORM_ID) private readonly platformId: object) {}
 
   ngOnInit(): void {
-    if (isPlatformBrowser(this.platformId)) setTimeout(() => this.restoreProgress(), 0);
+    if (isPlatformBrowser(this.platformId)) {
+      setTimeout(() => {
+        this.restoreSettings();
+        this.restoreProgress();
+      }, 0);
+    }
+  }
+
+  private restoreSettings(): void {
+    let saved: string | null;
+    try {
+      saved = window.localStorage.getItem('wortzeit-settings-v1');
+      if (!saved) {
+        const legacySettings = window.localStorage.getItem('deutsch-kompass-settings-v1');
+        if (legacySettings) {
+          const parsed: unknown = JSON.parse(legacySettings);
+          if (parsed && typeof parsed === 'object') {
+            const previousSettings = parsed as { translationLanguage?: unknown; theme?: unknown };
+            this.learningLanguage = previousSettings.translationLanguage === 'en' ? 'en' : 'de';
+            if (previousSettings.theme === 'light' || previousSettings.theme === 'dark') {
+              this.theme = previousSettings.theme;
+            }
+            this.saveSettings();
+          }
+        }
+      }
+    } catch (error) {
+      if (error instanceof DOMException) {
+        this.storageMessage = 'Браузер не дозволив доступ до збережених налаштувань.';
+        return;
+      }
+      if (error instanceof SyntaxError) {
+        this.storageMessage = 'Збережені налаштування пошкоджено. Використано стандартні параметри.';
+        return;
+      }
+      throw error;
+    }
+    if (!saved) return;
+
+    try {
+      const settings: unknown = JSON.parse(saved);
+      if (!this.isSavedSettings(settings)) {
+        this.storageMessage = 'Не вдалося прочитати збережені налаштування. Використано стандартні параметри.';
+        return;
+      }
+      this.learningLanguage = settings.learningLanguage;
+      this.theme = settings.theme;
+    } catch (error) {
+      if (error instanceof SyntaxError) {
+        this.storageMessage = 'Збережені налаштування пошкоджено. Використано стандартні параметри.';
+        return;
+      }
+      throw error;
+    }
   }
 
   private restoreProgress(): void {
     this.isBrowser = isPlatformBrowser(this.platformId);
     if (!this.isBrowser) return;
 
+    this.learned = new Set<string>();
+    this.favorites = new Set<string>();
+    this.dailyProgress = {};
+    this.showDailyGoalCelebration = false;
+    this.currentWord = this.words[0];
+    this.wordIndex = 0;
+
     let saved: string | null;
     try {
-      saved = window.localStorage.getItem('deutsch-kompass-progress-v1');
+      saved = window.localStorage.getItem(this.progressStorageKey);
+      if (!saved && this.learningLanguage === 'de') {
+        saved = window.localStorage.getItem('deutsch-kompass-progress-v1');
+      }
     } catch (error) {
       if (error instanceof DOMException) {
         this.storageMessage = 'Браузер не дозволив доступ до збережених даних.';
@@ -102,6 +175,9 @@ export class AppComponent implements OnInit {
       );
       this.currentWord = this.nextUnlearnedWord() ?? this.words[0];
       this.wordIndex = this.words.indexOf(this.currentWord);
+      if (this.learningLanguage === 'de' && !window.localStorage.getItem(this.progressStorageKey)) {
+        this.saveProgress();
+      }
     } catch (error) {
       if (error instanceof SyntaxError) {
         this.storageMessage = 'Збережений прогрес пошкоджено. Дані не змінено.';
@@ -117,8 +193,9 @@ export class AppComponent implements OnInit {
       const matchesCategory = this.activeCategory === 'Усі слова' || word.category === this.activeCategory;
       const matchesQuery =
         !query ||
-        word.word.toLocaleLowerCase('de').includes(query) ||
-        word.translation.toLocaleLowerCase('uk').includes(query);
+        this.displayWord(word).toLocaleLowerCase(this.learningLanguage).includes(query) ||
+        word.translation.toLocaleLowerCase('uk').includes(query) ||
+        word.word.toLocaleLowerCase('de').includes(query);
       return matchesCategory && matchesQuery;
     });
   }
@@ -240,10 +317,11 @@ export class AppComponent implements OnInit {
   }
 
   get progressMessage(): string {
-    if (this.progressPercent === 100) return `Усі ${this.words.length} слів вивчено — це неймовірно!`;
+    const language = this.learningLanguageName.toLocaleLowerCase('uk');
+    if (this.progressPercent === 100) return `Усі ${this.words.length} слів ${language} вивчено — це неймовірно!`;
     if (this.learnedCount === 0) return 'Почни з першого слова — у тебе все вийде!';
     if (this.todayCount >= this.dailyGoal) return 'Денну ціль виконано. Ти неймовірний(-а)!';
-    return 'Маленькі кроки щодня — і німецька стане звичкою.';
+    return `Маленькі кроки щодня — і ${language} стане звичкою.`;
   }
 
   get encouragement(): string {
@@ -252,6 +330,34 @@ export class AppComponent implements OnInit {
 
   get nextWord(): WordCard | undefined {
     return this.nextUnlearnedWord();
+  }
+
+  get learningLanguageName(): string {
+    return this.learningLanguage === 'de' ? 'Німецька' : 'Англійська';
+  }
+
+  displayWord(word: WordCard): string {
+    return this.learningLanguage === 'de' ? word.word : word.translationEnglish;
+  }
+
+  displayTranslation(word: WordCard): string {
+    return word.translation;
+  }
+
+  setLearningLanguage(language: LearningLanguage): void {
+    if (this.learningLanguage === language) return;
+    this.learningLanguage = language;
+    this.activeTab = 'words';
+    this.showAnswer = false;
+    this.feedback = '';
+    this.storageMessage = '';
+    this.saveSettings();
+    this.restoreProgress();
+  }
+
+  toggleTheme(): void {
+    this.theme = this.theme === 'light' ? 'dark' : 'light';
+    this.saveSettings();
   }
 
   selectTab(tab: LearningTab): void {
@@ -285,7 +391,7 @@ export class AppComponent implements OnInit {
       this.currentWord = this.words[0];
       this.wordIndex = 0;
       this.showAnswer = false;
-      this.feedback = 'Ти вивчив(-ла) весь словник! Повтори обрані слова або почитай тексти.';
+      this.feedback = 'Ти вивчив(-ла) весь словник! Повтори обрані слова або обери іншу мову навчання.';
     }
 
     if (isPlatformBrowser(this.platformId)) {
@@ -409,6 +515,10 @@ export class AppComponent implements OnInit {
     return this.dateKey(new Date());
   }
 
+  private get progressStorageKey(): string {
+    return `wortzeit-progress-${this.learningLanguage}-v1`;
+  }
+
   private dateKey(date: Date): string {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -447,7 +557,7 @@ export class AppComponent implements OnInit {
     };
 
     try {
-      window.localStorage.setItem('deutsch-kompass-progress-v1', JSON.stringify(progress));
+      window.localStorage.setItem(this.progressStorageKey, JSON.stringify(progress));
       this.storageMessage = '';
     } catch (error) {
       if (error instanceof DOMException) {
@@ -456,6 +566,34 @@ export class AppComponent implements OnInit {
       }
       throw error;
     }
+  }
+
+  private saveSettings(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const settings: SavedSettings = {
+      learningLanguage: this.learningLanguage,
+      theme: this.theme,
+    };
+
+    try {
+      window.localStorage.setItem('wortzeit-settings-v1', JSON.stringify(settings));
+      this.storageMessage = '';
+    } catch (error) {
+      if (error instanceof DOMException) {
+        this.storageMessage = 'Не вдалося зберегти налаштування. Перевір сховище браузера.';
+        return;
+      }
+      throw error;
+    }
+  }
+
+  private isSavedSettings(value: unknown): value is SavedSettings {
+    if (!value || typeof value !== 'object') return false;
+    const settings = value as Partial<SavedSettings>;
+    return (
+      (settings.learningLanguage === 'de' || settings.learningLanguage === 'en') &&
+      (settings.theme === 'light' || settings.theme === 'dark')
+    );
   }
 
   private isSavedProgress(value: unknown): value is SavedProgress {

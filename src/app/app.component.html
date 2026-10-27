@@ -1,21 +1,45 @@
-<div class="app-shell">
+<div class="app-shell" [class.theme-dark]="theme === 'dark'">
   <header class="topbar">
-    <a class="brand" href="#start" aria-label="Wortzeit — на головну">
+    <a class="brand" href="#start" aria-label="Wortzeit Duo — на головну">
       <span class="brand-mark">W</span>
-      <span>wortzeit<span class="brand-period">.</span></span>
+      <span>wortzeit<span class="brand-period"> duo.</span></span>
     </a>
-    <div class="topbar-note"><span class="online-dot"></span> Німецька — крок за кроком</div>
-    <div class="level-pill"><span>✦</span> Рівень A2</div>
+    <div class="topbar-note"><span class="online-dot"></span> Дві мови для навчання</div>
+    <div class="topbar-controls">
+      <div class="active-language-pill" aria-live="polite">Вивчаю: {{ learningLanguageName }}</div>
+      <button
+        class="theme-toggle"
+        type="button"
+        [attr.aria-label]="theme === 'light' ? 'Увімкнути темну тему' : 'Увімкнути світлу тему'"
+        (click)="toggleTheme()">
+        <span aria-hidden="true">{{ theme === 'light' ? '☾' : '☀' }}</span>
+        <span class="theme-toggle-label">{{ theme === 'light' ? 'Темна' : 'Світла' }}</span>
+      </button>
+      <div class="level-pill"><span>✦</span> {{ learningLanguage === 'de' ? 'Німецька A2' : 'Англійська' }}</div>
+    </div>
   </header>
 
   <main id="start">
     <section class="hero">
       <div class="hero-copy">
-        <p class="eyebrow">ВИВЧАЙ НІМЕЦЬКУ ІЗ ЗАДОВОЛЕННЯМ</p>
-        <h1>Німецька,<br />що <span>залишається.</span></h1>
+        <p class="eyebrow">НІМЕЦЬКА ТА АНГЛІЙСЬКА — В ОДНОМУ МІСЦІ</p>
+        <h1>Дві мови,<br /><span>твій темп.</span></h1>
         <p class="hero-description">
-          Нові слова, корисні фрази та короткі тексти. Навчайся у власному темпі — ми збережемо твій прогрес.
+          Обери мову, яку вивчаєш зараз. Український інтерфейс і категорії залишаються незмінними, а прогрес кожної мови зберігається окремо.
         </p>
+        <div class="learning-language-picker" role="group" aria-label="Обери мову навчання">
+          <span class="language-picker-label">ЗАРАЗ ВИВЧАЮ</span>
+          <div class="learning-language-switch">
+            <button type="button" [class.active]="learningLanguage === 'de'" [attr.aria-pressed]="learningLanguage === 'de'" (click)="setLearningLanguage('de')">
+              <span class="language-code">DE</span>
+              <span class="language-option-text"><strong>Німецьку</strong><small>500 слів · A2</small></span>
+            </button>
+            <button type="button" [class.active]="learningLanguage === 'en'" [attr.aria-pressed]="learningLanguage === 'en'" (click)="setLearningLanguage('en')">
+              <span class="language-code">EN</span>
+              <span class="language-option-text"><strong>Англійську</strong><small>500 слів</small></span>
+            </button>
+          </div>
+        </div>
         <button class="primary-button hero-button" type="button" (click)="startLearning()">
           <span>Почати навчання</span><span aria-hidden="true">→</span>
         </button>
@@ -23,16 +47,16 @@
       </div>
       <div class="hero-art" aria-hidden="true">
         <div class="sun-shape"></div>
-        <div class="floating-note note-top"><span>der Morgen</span><small>ранок</small></div>
+        <div class="floating-note note-top"><span>der Morgen · morning</span><small>ранок · DE + EN</small></div>
         <div class="book-illustration">
           <div class="book-page book-back"></div>
           <div class="book-page book-front">
-            <span class="book-label">СЛОВО<br />ЗА СЛОВОМ</span>
+            <span class="book-label">DEUTSCH<br />+ ENGLISH</span>
             <span class="book-flower">✳</span>
-            <span class="book-caption">Мій щоденник<br />німецької</span>
+            <span class="book-caption">Мій словник<br />двох мов</span>
           </div>
         </div>
-        <div class="floating-note note-bottom"><span>Weiter so!</span><small>Так тримати!</small></div>
+        <div class="floating-note note-bottom"><span>Weiter so! · Keep it up!</span><small>Так тримати! · DE + EN</small></div>
         <span class="art-star star-one">✳</span>
         <span class="art-star star-two">✦</span>
       </div>
@@ -111,8 +135,8 @@
           <p *ngIf="selectedDayWords.length === 0" class="diary-empty-message">Цього дня слова ще не вивчалися.</p>
           <ul *ngIf="selectedDayWords.length > 0" class="diary-word-list">
             <li *ngFor="let word of selectedDayWords">
-              <strong lang="de">{{ word.word }}</strong>
-              <span>{{ word.translation }}</span>
+              <strong [attr.lang]="learningLanguage">{{ displayWord(word) }}</strong>
+              <span>{{ displayTranslation(word) }}</span>
             </li>
           </ul>
         </div>
@@ -125,14 +149,17 @@
           <p class="section-kicker">ТВОЯ МІНІПРАКТИКА</p>
           <h2>Що вивчатимемо?</h2>
         </div>
-        <span class="total-pill">{{ words.length }} слів · A2</span>
+        <span class="total-pill">{{ words.length }} слів · {{ learningLanguageName }}{{ learningLanguage === 'de' ? ' A2' : '' }}</span>
       </div>
 
       <nav class="tab-list" aria-label="Обрати матеріал">
         <button type="button" [class.active]="activeTab === 'words'" (click)="selectTab('words')"><span>✦</span> Слова <span class="tab-count">{{ words.length }}</span></button>
-        <button type="button" [class.active]="activeTab === 'phrases'" (click)="selectTab('phrases')"><span>〝</span> Фрази <span class="tab-count">{{ phrases.length }}</span></button>
-        <button type="button" [class.active]="activeTab === 'texts'" (click)="selectTab('texts')"><span>▤</span> Тексти <span class="tab-count">{{ readingTexts.length }}</span></button>
+        <button *ngIf="learningLanguage === 'de'" type="button" [class.active]="activeTab === 'phrases'" (click)="selectTab('phrases')"><span>〝</span> Фрази <span class="tab-count">{{ phrases.length }}</span></button>
+        <button *ngIf="learningLanguage === 'de'" type="button" [class.active]="activeTab === 'texts'" (click)="selectTab('texts')"><span>▤</span> Тексти <span class="tab-count">{{ readingTexts.length }}</span></button>
       </nav>
+      <p *ngIf="learningLanguage === 'en'" class="english-mode-note" role="status">
+        Англійська: картки зі словами та українськими значеннями. Фрази й тексти поки доступні лише в режимі німецької.
+      </p>
 
       <div *ngIf="feedback" class="feedback-banner" role="status">
         <span>✨</span><p>{{ feedback }}</p><button type="button" aria-label="Закрити повідомлення" (click)="feedback = ''">×</button>
@@ -142,19 +169,26 @@
       <ng-container *ngIf="activeTab === 'words'">
         <article class="daily-card" *ngIf="nextWord; else allWordsLearned">
           <div class="daily-card-top">
-            <div class="daily-label"><span class="daily-dot"></span> КАРТКА СЛОВА</div>
+            <div class="daily-label"><span class="daily-dot"></span> {{ learningLanguage === 'de' ? 'НІМЕЦЬКЕ СЛОВО' : 'АНГЛІЙСЬКЕ СЛОВО' }}</div>
+            <span class="word-card-position">Картка {{ wordIndex + 1 }} з {{ words.length }}</span>
           </div>
           <div class="word-slider" (touchstart)="onWordTouchStart($event)" (touchend)="onWordTouchEnd($event)">
             <div #wordSlide class="word-slide">
               <div class="daily-word">
                 <span class="word-category">{{ currentWord.category }}</span>
-                <h3>{{ currentWord.word }}</h3>
-                <p class="word-hint" *ngIf="showAnswer">{{ currentWord.translation }}</p>
-                <p class="word-hint hidden-hint" *ngIf="!showAnswer">Спробуй пригадати переклад або відкрий підказку</p>
+                <h3 [attr.lang]="learningLanguage">{{ displayWord(currentWord) }}</h3>
+                <div class="translation-reveal" *ngIf="showAnswer" aria-live="polite">
+                  <span class="translation-label">Українською</span>
+                  <p class="word-hint">{{ displayTranslation(currentWord) }}</p>
+                </div>
+                <p class="word-hint hidden-hint" *ngIf="!showAnswer">Згадай значення, а потім відкрий відповідь</p>
               </div>
-              <div class="word-example">
+              <div class="word-example" *ngIf="learningLanguage === 'de'">
                 <div><span class="example-label">СЛОВОСПОЛУЧЕННЯ</span><p>{{ currentWord.phrase }}</p></div>
                 <div><span class="example-label">У КОНТЕКСТІ</span><p>{{ currentWord.example }}</p></div>
+              </div>
+              <div class="word-example english-context-note" *ngIf="learningLanguage === 'en'">
+                Український переклад допоможе пригадати значення англійського слова.
               </div>
             </div>
           </div>
@@ -167,25 +201,25 @@
             <span class="encouragement-mini">У тебе все вийде! <span>✦</span></span>
           </div>
           <div class="slider-controls" aria-label="Перемикання карток">
-            <button type="button" aria-label="Попереднє слово" (click)="showPreviousWord()">←</button>
-            <span>{{ wordIndex + 1 }} / {{ words.length }}</span>
+            <button type="button" aria-label="Попереднє слово" (click)="showPreviousWord()"><span aria-hidden="true">←</span><span class="slider-button-label">Назад</span></button>
             <div class="slider-progress"><span [style.width.%]="((wordIndex + 1) / words.length) * 100"></span></div>
-            <button type="button" aria-label="Наступне слово" (click)="showNextWord()">→</button>
-            <span class="swipe-hint">Гортай картки свайпом</span>
+            <span class="slider-position">{{ wordIndex + 1 }} / {{ words.length }}</span>
+            <button type="button" aria-label="Наступне слово" (click)="showNextWord()"><span class="slider-button-label">Далі</span><span aria-hidden="true">→</span></button>
+            <span class="swipe-hint">Можна гортати свайпом</span>
           </div>
         </article>
         <ng-template #allWordsLearned>
           <article class="complete-card">
             <span class="complete-icon">🎉</span>
-            <div><h3>Увесь словник пройдено!</h3><p>Неймовірний результат. Повтори обрані слова або почитай тексти для закріплення.</p></div>
+            <div><h3>Увесь словник пройдено!</h3><p>Неймовірний результат. Повтори обрані слова або обери іншу мову навчання.</p></div>
           </article>
         </ng-template>
 
         <div class="library-heading">
-          <div><h3>Словник A2</h3><p>Обирай слова, які хочеш повторити</p></div>
+          <div><h3>Словник {{ learningLanguageName }}{{ learningLanguage === 'de' ? ' A2' : '' }}</h3><p>Обирай слова, які хочеш повторити</p></div>
           <label class="search-box">
             <span aria-hidden="true">⌕</span>
-            <input type="search" [(ngModel)]="searchQuery" placeholder="Знайти слово…" aria-label="Пошук слів" />
+            <input type="search" [(ngModel)]="searchQuery" placeholder="Знайти слово…" [attr.aria-label]="'Пошук слів ' + learningLanguageName" />
           </label>
         </div>
         <div class="category-list" aria-label="Категорії слів">
@@ -201,9 +235,9 @@
                 {{ isFavorite(word) ? '♥' : '♡' }}
               </button>
             </div>
-            <h4>{{ word.word }}</h4>
-            <p class="vocab-translation">{{ word.translation }}</p>
-            <div class="vocab-example"><span>{{ word.phrase }}</span><small>{{ word.example }}</small></div>
+            <h4 [attr.lang]="learningLanguage">{{ displayWord(word) }}</h4>
+            <p class="vocab-translation">{{ displayTranslation(word) }}</p>
+            <div class="vocab-example" *ngIf="learningLanguage === 'de'"><span>{{ word.phrase }}</span><small>{{ word.example }}</small></div>
             <button class="learned-button" [class.is-learned]="isLearned(word)" type="button" (click)="markLearned(word)">
               <span>{{ isLearned(word) ? '✓' : '+' }}</span> {{ isLearned(word) ? 'Вивчено' : 'Позначити вивченим' }}
             </button>
@@ -256,19 +290,19 @@
 
     <section class="quote-banner">
       <span class="quote-mark">“</span>
-      <div><p>{{ encouragement }}</p><small>Ти робиш більше, ніж здається. Weiter so!</small></div>
+      <div><p>{{ encouragement }}</p><small>Ти робиш більше, ніж здається. Так тримати!</small></div>
       <span class="quote-flower" aria-hidden="true">✳</span>
     </section>
   </main>
 
   <footer class="footer">
-    <a class="brand footer-brand" href="#start"><span class="brand-mark">W</span><span>wortzeit<span class="brand-period">.</span></span></a>
+    <a class="brand footer-brand" href="#start"><span class="brand-mark">W</span><span>wortzeit<span class="brand-period"> duo.</span></span></a>
     <p>Маленькі слова. Великі можливості.</p>
     <span>Прогрес зберігається у твоєму браузері <span class="footer-heart">♡</span></span>
   </footer>
 </div>
 
-<div *ngIf="showDailyGoalCelebration" class="goal-celebration-backdrop">
+<div *ngIf="showDailyGoalCelebration" class="goal-celebration-backdrop" [class.theme-dark]="theme === 'dark'">
   <section class="goal-celebration" role="dialog" aria-modal="true" aria-labelledby="goal-celebration-title">
     <div class="goal-bear-scene" aria-hidden="true">
       <span class="goal-sparkle sparkle-left">✦</span>

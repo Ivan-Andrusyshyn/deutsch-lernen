@@ -1,9 +1,12 @@
+import { englishTranslations } from './english-translations';
+
 export type WordKind = 'noun' | 'verb' | 'adjective';
 
 export interface WordCard {
   id: string;
   word: string;
   translation: string;
+  translationEnglish: string;
   category: string;
   kind: WordKind;
   phrase: string;
@@ -842,7 +845,7 @@ const verbExamples: Record<string, string> = {
   verlieren: 'Ich verliere oft meine Schlüssel.',
 };
 
-export const vocabulary: WordCard[] = [
+const vocabularyWithoutEnglish: Omit<WordCard, 'translationEnglish'>[] = [
   ...nouns.map(([word, translation, category], index) => {
     const article = word.split(' ')[0];
     const noun = word.slice(article.length + 1);
@@ -920,6 +923,14 @@ export const vocabulary: WordCard[] = [
     example: additionalAdjectiveExamples[word],
   })),
 ];
+
+export const vocabulary: WordCard[] = vocabularyWithoutEnglish.map((word) => {
+  const translationEnglish = englishTranslations[word.word];
+  if (!translationEnglish) {
+    throw new Error(`Missing English vocabulary translation for "${word.word}".`);
+  }
+  return { ...word, translationEnglish };
+});
 
 export interface Phrase {
   german: string;

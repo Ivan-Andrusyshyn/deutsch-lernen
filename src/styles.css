@@ -329,3 +329,880 @@ summary:focus-visible {
     grid-template-columns: 1fr;
   }
 }
+
+.app-shell .topbar-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.app-shell .theme-toggle {
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid #e8ece5;
+  border-radius: 9px;
+  padding: 0 10px;
+  background: #fff;
+  color: #5d6e61;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease;
+}
+
+.app-shell .theme-toggle:hover {
+  border-color: #bdcdb6;
+  background: #f6f8f2;
+}
+
+.app-shell .theme-toggle > span:first-child {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.app-shell .active-language-pill {
+  border: 1px solid #e8ece5;
+  border-radius: 999px;
+  padding: 8px 11px;
+  background: #f7f8f4;
+  color: #326f55;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.app-shell .learning-language-picker {
+  max-width: 390px;
+  margin-top: 20px;
+}
+
+.app-shell .language-picker-label {
+  display: block;
+  margin-bottom: 7px;
+  color: #849187;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+}
+
+.app-shell .learning-language-switch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.app-shell .learning-language-switch button {
+  min-width: 0;
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #e5e9e1;
+  border-radius: 11px;
+  padding: 8px 11px;
+  background: #fff;
+  color: #65716a;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease, box-shadow 150ms ease;
+}
+
+.app-shell .learning-language-switch button:hover {
+  border-color: #b7c9b4;
+}
+
+.app-shell .learning-language-switch button.active {
+  border-color: #326f55;
+  background: #f1f6ed;
+  box-shadow: 0 0 0 2px rgb(50 111 85 / 10%);
+  color: #27563f;
+}
+
+.app-shell .language-code {
+  width: 31px;
+  height: 31px;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 8px;
+  background: #f2f3ed;
+  color: #68766d;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.app-shell .learning-language-switch button.active .language-code {
+  background: #326f55;
+  color: #fff;
+}
+
+.app-shell .language-option-text {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.app-shell .language-option-text strong {
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.app-shell .language-option-text small {
+  color: #849187;
+  font-size: 9px;
+}
+
+.app-shell .english-mode-note {
+  margin: 15px 0;
+  border-left: 3px solid #80a879;
+  border-radius: 0 8px 8px 0;
+  padding: 10px 12px;
+  background: #f3f6ed;
+  color: #5f705f;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.app-shell .english-context-note {
+  color: #78837d;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.app-shell .daily-card {
+  max-width: 900px;
+  margin: 26px auto 0;
+  border: 1px solid #e3e9db;
+  border-radius: 20px;
+  padding: 27px 34px 22px;
+  background:
+    radial-gradient(ellipse at 50% 0, rgb(255 255 255 / 90%), transparent 58%),
+    linear-gradient(135deg, #fcfdf7, #f4f7ed);
+  box-shadow: 0 16px 42px rgb(46 67 48 / 8%);
+}
+
+.app-shell .word-slider {
+  touch-action: pan-y;
+  user-select: none;
+}
+
+.app-shell .daily-card-top {
+  min-height: 34px;
+  border-bottom: 1px solid #e7ebdf;
+  padding-bottom: 14px;
+}
+
+.app-shell .word-card-position {
+  border: 1px solid #e0e8d8;
+  border-radius: 999px;
+  padding: 7px 11px;
+  background: #fff;
+  color: #64765d;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.app-shell .slider-controls {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 22px;
+  border-top: 1px solid #e9ebdf;
+  padding-top: 18px;
+  color: #7c897c;
+  font-size: 12px;
+}
+
+.app-shell .slider-controls > button {
+  min-width: 95px;
+  min-height: 44px;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid #dfe6d9;
+  border-radius: 11px;
+  padding: 0 12px;
+  background: #fff;
+  color: #54745a;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease, transform 150ms ease;
+}
+
+.app-shell .slider-controls > button:hover {
+  border-color: #bfd1b2;
+  background: #f4f8eb;
+  transform: translateY(-1px);
+}
+
+.app-shell .slider-progress {
+  width: auto;
+  height: 7px;
+  flex: 1 1 auto;
+  overflow: hidden;
+  border-radius: 99px;
+  background: #e8ecdf;
+}
+
+.app-shell .slider-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #668f64, #a9c779);
+  transition: width 200ms ease;
+}
+
+.app-shell .slider-position {
+  min-width: 58px;
+  color: #53644f;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.app-shell .swipe-hint {
+  margin-left: 2px;
+  color: #98a092;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.app-shell .daily-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #607654;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.1px;
+}
+
+.app-shell .daily-word {
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 27px 0 24px;
+  text-align: center;
+}
+
+.app-shell .word-category {
+  border-radius: 999px;
+  padding: 6px 11px;
+  background: #edf2e6;
+  color: #687a5d;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.app-shell .daily-word h3 {
+  margin: 13px 0 10px;
+  font-family: Georgia, serif;
+  font-size: clamp(42px, 5vw, 58px);
+  font-weight: 400;
+  letter-spacing: -1.5px;
+  line-height: 1.08;
+  overflow-wrap: anywhere;
+}
+
+.app-shell .word-hint {
+  margin: 0;
+  color: #3e654d;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.app-shell .hidden-hint {
+  color: #7b8778;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.app-shell .translation-reveal {
+  min-width: 155px;
+  border: 1px solid #dce8d6;
+  border-radius: 12px;
+  padding: 10px 20px;
+  background: #fff;
+  animation: goal-card-in 180ms ease-out both;
+}
+
+.app-shell .translation-label {
+  display: block;
+  margin-bottom: 4px;
+  color: #85917f;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.app-shell .word-example {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  border-top: 1px solid #e4e9dc;
+  padding-top: 18px;
+}
+
+.app-shell .word-example > div {
+  min-height: 72px;
+  border: 1px solid #e5eadd;
+  border-radius: 12px;
+  padding: 13px 15px;
+  background: rgb(255 255 255 / 72%);
+}
+
+.app-shell .example-label {
+  color: #a1a28f;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.app-shell .word-example p {
+  margin: 7px 0 0;
+  color: #48584d;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.app-shell .english-context-note {
+  min-height: auto !important;
+  color: #748172;
+  font-size: 12px;
+  text-align: center;
+}
+
+.app-shell .daily-actions {
+  justify-content: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.app-shell .daily-actions .primary-button,
+.app-shell .daily-actions .outline-button {
+  min-height: 48px;
+  border-radius: 11px;
+  padding-inline: 20px;
+  font-size: 13px;
+}
+
+.app-shell .daily-actions > .outline-button:only-child {
+  min-width: min(100%, 260px);
+  border-color: #6c966b;
+  background: #fff;
+  color: #416749;
+  box-shadow: 0 4px 12px rgb(46 67 48 / 7%);
+}
+
+.app-shell .daily-actions > .outline-button:only-child:hover {
+  border-color: #4e8056;
+  background: #f5f9f1;
+}
+
+@media (max-width: 760px) {
+  .app-shell .topbar-controls {
+    gap: 5px;
+  }
+
+  .app-shell .daily-card {
+    padding: 24px 24px 20px;
+  }
+
+  .app-shell .daily-word {
+    min-height: 165px;
+  }
+}
+
+@media (max-width: 520px) {
+  .app-shell .active-language-pill {
+    display: none;
+  }
+
+  .app-shell .learning-language-picker {
+    max-width: 355px;
+  }
+
+  .app-shell .learning-language-switch {
+    gap: 6px;
+  }
+
+  .app-shell .learning-language-switch button {
+    gap: 7px;
+    padding-inline: 8px;
+  }
+
+  .app-shell .theme-toggle {
+    width: 35px;
+    min-height: 35px;
+    padding: 0;
+  }
+
+  .app-shell .theme-toggle-label {
+    display: none;
+  }
+
+  .app-shell .daily-card {
+    margin-top: 15px;
+    border-radius: 17px;
+    padding: 18px 16px 16px;
+  }
+
+  .app-shell .daily-card-top {
+    align-items: center;
+    gap: 9px;
+    padding-bottom: 12px;
+  }
+
+  .app-shell .daily-label {
+    font-size: 9px;
+    letter-spacing: 0.7px;
+  }
+
+  .app-shell .word-card-position {
+    padding: 6px 8px;
+    font-size: 10px;
+  }
+
+  .app-shell .daily-word {
+    min-height: 160px;
+    padding: 20px 0 19px;
+  }
+
+  .app-shell .daily-word h3 {
+    max-width: 100%;
+    margin: 11px 0 9px;
+    font-size: clamp(36px, 10vw, 48px);
+  }
+
+  .app-shell .word-hint {
+    font-size: 18px;
+  }
+
+  .app-shell .hidden-hint {
+    max-width: 250px;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .app-shell .translation-reveal {
+    min-width: 135px;
+    padding: 9px 16px;
+  }
+
+  .app-shell .word-example {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding-top: 14px;
+  }
+
+  .app-shell .word-example > div {
+    min-height: 0;
+    padding: 11px 12px;
+  }
+
+  .app-shell .word-example p {
+    font-size: 12px;
+  }
+
+  .app-shell .daily-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+    margin-top: 15px;
+  }
+
+  .app-shell .daily-actions > .outline-button:only-child {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .app-shell .slider-controls {
+    display: grid;
+    grid-template-columns: auto minmax(35px, 1fr) auto auto;
+    gap: 8px;
+    margin-top: 16px;
+    padding-top: 14px;
+  }
+
+  .app-shell .slider-controls > button {
+    min-width: 70px;
+    min-height: 44px;
+    gap: 6px;
+    border-radius: 10px;
+    padding-inline: 8px;
+    font-size: 11px;
+  }
+
+  .app-shell .slider-progress {
+    width: auto;
+  }
+
+  .app-shell .slider-position {
+    min-width: 45px;
+    font-size: 11px;
+  }
+
+  .app-shell .swipe-hint {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-size: 10px;
+    text-align: center;
+  }
+
+  .app-shell .daily-actions .primary-button,
+  .app-shell .daily-actions .outline-button {
+    min-width: 0;
+    min-height: 48px;
+    gap: 6px;
+    padding-inline: 10px;
+    font-size: 11px;
+  }
+}
+
+.app-shell.theme-dark {
+  --ink: #e8eee8;
+  --muted: #aab8ad;
+  --green: #83b995;
+  --green-dark: #6da982;
+  --line: #35433a;
+  --paper: #151c17;
+  color: #e8eee8;
+  background: #151c17;
+  color-scheme: dark;
+}
+
+.app-shell.theme-dark .topbar,
+.app-shell.theme-dark .footer {
+  border-color: #303c33;
+}
+
+.app-shell.theme-dark .topbar-note,
+.app-shell.theme-dark .hero-description,
+.app-shell.theme-dark .language-option-text small,
+.app-shell.theme-dark .english-context-note,
+.app-shell.theme-dark .social-proof,
+.app-shell.theme-dark .progress-message,
+.app-shell.theme-dark .progress-foot,
+.app-shell.theme-dark .stat-item small,
+.app-shell.theme-dark .library-heading p,
+.app-shell.theme-dark .content-intro p,
+.app-shell.theme-dark .swipe-hint,
+.app-shell.theme-dark .word-hint,
+.app-shell.theme-dark .vocab-translation,
+.app-shell.theme-dark .footer {
+  color: #aab8ad;
+}
+
+.app-shell.theme-dark .progress-panel,
+.app-shell.theme-dark .vocab-card,
+.app-shell.theme-dark .phrase-card,
+.app-shell.theme-dark .reading-card,
+.app-shell.theme-dark .reading-toggle,
+.app-shell.theme-dark .search-box,
+.app-shell.theme-dark .category-list button,
+.app-shell.theme-dark .favorite-button,
+.app-shell.theme-dark .slider-controls > button,
+.app-shell.theme-dark .outline-button,
+.app-shell.theme-dark .theme-toggle,
+.app-shell.theme-dark .learning-language-switch button,
+.app-shell.theme-dark .diary-word-list li {
+  border-color: #36443a;
+  background-color: #202a23;
+  color: #e3ebe3;
+}
+
+.app-shell.theme-dark .daily-card {
+  border-color: #3a493d;
+  background: linear-gradient(120deg, #202a23, #1c261f);
+  box-shadow: 0 16px 42px rgb(0 0 0 / 18%);
+}
+
+.app-shell.theme-dark .daily-card-top,
+.app-shell.theme-dark .word-example {
+  border-color: #3a493d;
+}
+
+.app-shell.theme-dark .word-card-position,
+.app-shell.theme-dark .translation-reveal,
+.app-shell.theme-dark .word-example > div {
+  border-color: #3c4c3f;
+  background: #263229;
+  color: #e3ebe3;
+}
+
+.app-shell.theme-dark .daily-word .word-category {
+  background: #354638;
+  color: #c0d8b7;
+}
+
+.app-shell.theme-dark .daily-word .word-hint {
+  color: #d7e8d3;
+}
+
+.app-shell.theme-dark .daily-word .hidden-hint {
+  color: #aab8ad;
+}
+
+.app-shell.theme-dark .translation-label {
+  color: #a9c5a5;
+}
+
+.app-shell.theme-dark .daily-label {
+  color: #b9d1ad;
+}
+
+.app-shell.theme-dark .slider-position {
+  color: #d2e0d2;
+}
+
+.app-shell.theme-dark .daily-actions > .outline-button:only-child {
+  border-color: #78a981;
+  background: #263b2c;
+  color: #e0f0df;
+}
+
+.app-shell.theme-dark .daily-actions > .outline-button:only-child:hover {
+  border-color: #9ac99c;
+  background: #304a36;
+}
+
+.app-shell.theme-dark .daily-actions .primary-button {
+  border-color: #8bc698;
+  background: #8bc698;
+  color: #15241a;
+}
+
+.app-shell.theme-dark .level-pill,
+.app-shell.theme-dark .total-pill,
+.app-shell.theme-dark .category-list button.selected,
+.app-shell.theme-dark .tab-count,
+.app-shell.theme-dark .diary-detail-heading > span {
+  border-color: #3c4d3e;
+  background: #29372a;
+  color: #b7d19f;
+}
+
+.app-shell.theme-dark .active-language-pill {
+  border-color: #3c4d3e;
+  background: #29372a;
+  color: #d7edce;
+}
+
+.app-shell.theme-dark .learning-language-switch button.active {
+  border-color: #678a69;
+  background: #293b2e;
+  color: #e3ebe3;
+}
+
+.app-shell.theme-dark .language-code {
+  background: #303c33;
+  color: #c5d2c7;
+}
+
+.app-shell.theme-dark .learning-language-switch button.active .language-code {
+  background: #6da982;
+  color: #111a14;
+}
+
+.app-shell.theme-dark .english-mode-note {
+  border-color: #83b995;
+  background: #202a23;
+  color: #c5d2c7;
+}
+
+.app-shell.theme-dark .theme-toggle:hover,
+.app-shell.theme-dark .slider-controls > button:hover,
+.app-shell.theme-dark .outline-button:hover {
+  border-color: #59715e;
+  background: #2b3a2f;
+}
+
+.app-shell.theme-dark .streak-badge {
+  background: #382f22;
+  color: #e2c99e;
+}
+
+.app-shell.theme-dark .streak-badge strong {
+  color: #f0dfc2;
+}
+
+.app-shell.theme-dark .progress-track,
+.app-shell.theme-dark .slider-progress {
+  background: #303c33;
+}
+
+.app-shell.theme-dark .stats-row,
+.app-shell.theme-dark .stat-item + .stat-item,
+.app-shell.theme-dark .language-diary,
+.app-shell.theme-dark .diary-month-summary,
+.app-shell.theme-dark .slider-controls,
+.app-shell.theme-dark .word-example,
+.app-shell.theme-dark .vocab-example,
+.app-shell.theme-dark .phrase-example,
+.app-shell.theme-dark .reading-content,
+.app-shell.theme-dark .comprehension {
+  border-color: #354138;
+}
+
+.app-shell.theme-dark .diary-day-detail,
+.app-shell.theme-dark .diary-day {
+  background: #202a23;
+}
+
+.app-shell.theme-dark .diary-day:disabled {
+  background: #1b241e;
+  color: #667269;
+}
+
+.app-shell.theme-dark .diary-day-count,
+.app-shell.theme-dark .diary-detail-heading h4,
+.app-shell.theme-dark .diary-word-list strong {
+  color: #d0ded1;
+}
+
+.app-shell.theme-dark .diary-day.activity-low,
+.app-shell.theme-dark .legend-dot.activity-low {
+  background: #354b37;
+}
+
+.app-shell.theme-dark .diary-day.activity-medium,
+.app-shell.theme-dark .legend-dot.activity-medium {
+  background: #466c49;
+}
+
+.app-shell.theme-dark .diary-day.activity-high,
+.app-shell.theme-dark .legend-dot.activity-high {
+  background: #6e9b69;
+  color: #132117;
+}
+
+.app-shell.theme-dark .diary-day.is-today {
+  border-color: #9dc58e;
+}
+
+.app-shell.theme-dark .diary-day.is-selected {
+  outline-color: #9dc58e;
+}
+
+.app-shell.theme-dark .diary-word-list li > span,
+.app-shell.theme-dark .diary-empty-message,
+.app-shell.theme-dark .diary-month-summary,
+.app-shell.theme-dark .diary-weekday,
+.app-shell.theme-dark .diary-legend {
+  color: #a4b0a5;
+}
+
+.app-shell.theme-dark .diary-word-list li {
+  background: #29342c;
+}
+
+.app-shell.theme-dark .word-example p,
+.app-shell.theme-dark .vocab-example span,
+.app-shell.theme-dark .phrase-example p,
+.app-shell.theme-dark .reading-german,
+.app-shell.theme-dark .translation-details p,
+.app-shell.theme-dark .comprehension > div > p,
+.app-shell.theme-dark .comprehension details p {
+  color: #d5dfd6;
+}
+
+.app-shell.theme-dark .complete-card,
+.app-shell.theme-dark .feedback-banner {
+  border-color: #405741;
+  background: #283729;
+  color: #d4e4cb;
+}
+
+.app-shell.theme-dark .storage-message {
+  border-color: #66503a;
+  background: #382e23;
+  color: #e6c6a0;
+}
+
+.app-shell.theme-dark .quote-banner {
+  background: #263329;
+}
+
+.app-shell.theme-dark .quote-banner p {
+  color: #d3e1d2;
+}
+
+.app-shell.theme-dark h1,
+.app-shell.theme-dark h2,
+.app-shell.theme-dark h3,
+.app-shell.theme-dark h4,
+.app-shell.theme-dark .daily-word h3,
+.app-shell.theme-dark .vocab-card h4,
+.app-shell.theme-dark .phrase-card h3,
+.app-shell.theme-dark .reading-title strong {
+  color: #e8eee8;
+}
+
+.app-shell.theme-dark .section-kicker,
+.app-shell.theme-dark .eyebrow,
+.app-shell.theme-dark .word-category,
+.app-shell.theme-dark .example-label,
+.app-shell.theme-dark .diary-legend,
+.app-shell.theme-dark .diary-weekday {
+  color: #a4b1a6;
+}
+
+.app-shell.theme-dark .search-box input {
+  background: transparent;
+  color: #e8eee8;
+}
+
+.app-shell.theme-dark .search-box input::placeholder {
+  color: #89968b;
+}
+
+.app-shell.theme-dark .tab-list button {
+  color: #aab8ad;
+}
+
+.app-shell.theme-dark .tab-list button.active {
+  color: #9acbaa;
+}
+
+.app-shell.theme-dark .reading-title small,
+.app-shell.theme-dark .reading-action,
+.app-shell.theme-dark .phrase-practice,
+.app-shell.theme-dark .translation-details,
+.app-shell.theme-dark .comprehension details {
+  color: #a7c39f;
+}
+
+.app-shell.theme-dark .favorite-button.favorite {
+  border-color: #63463e;
+  background: #3d2c28;
+  color: #ef9c88;
+}
+
+.app-shell.theme-dark .learned-button,
+.app-shell.theme-dark .learned-button.is-learned {
+  border-color: #3c4b3e;
+  background: #26332a;
+  color: #c0d5bd;
+}
+
+.app-shell.theme-dark .empty-state {
+  color: #aab8ad;
+}
+
+html:has(.app-shell.theme-dark) {
+  background: #151c17;
+}
