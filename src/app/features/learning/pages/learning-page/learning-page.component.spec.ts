@@ -1,27 +1,29 @@
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
-import { AppComponent } from './app.component';
-import { phrases, readingTexts, vocabulary } from './vocabulary';
+import { LearningPageComponent } from './learning-page.component';
+import { phrases, readingTexts, vocabulary } from '../../data/vocabulary';
 
-describe('AppComponent', () => {
+describe('LearningPageComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppComponent],
+      imports: [LearningPageComponent],
     }).compileComponents();
   });
 
   it('renders the Ukrainian app with two clearly labeled study languages', () => {
-    const fixture = TestBed.createComponent(AppComponent);
+    const fixture = TestBed.createComponent(LearningPageComponent);
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('h1')?.textContent).toContain('Дві мови');
-    expect(compiled.querySelector('.total-pill')?.textContent).toContain('500 слів');
+    expect(compiled.querySelector('.total-pill')?.textContent).toContain('1000 слів');
     expect(compiled.querySelector('.learning-language-picker')?.textContent).toContain('Німецьку');
     expect(compiled.querySelector('.learning-language-picker')?.textContent).toContain('Англійську');
+    expect(compiled.querySelectorAll('.language-option-text small')[0].textContent).toContain('1000 слів');
+    expect(compiled.querySelectorAll('.language-option-text small')[1].textContent).toContain('1000 слів');
   });
 
   it('switches the study word while keeping the Ukrainian meaning and category', () => {
-    const app = TestBed.createComponent(AppComponent).componentInstance;
+    const app = TestBed.createComponent(LearningPageComponent).componentInstance;
     const word = vocabulary[0];
     const germanWord = word.word;
     const ukrainianTranslation = word.translation;
@@ -41,7 +43,7 @@ describe('AppComponent', () => {
   });
 
   it('updates the study language in the UI and keeps German-only materials out of English mode', () => {
-    const fixture = TestBed.createComponent(AppComponent);
+    const fixture = TestBed.createComponent(LearningPageComponent);
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
@@ -62,11 +64,11 @@ describe('AppComponent', () => {
   });
 
   it('makes the learning card position, answer, and navigation controls explicit', () => {
-    const fixture = TestBed.createComponent(AppComponent);
+    const fixture = TestBed.createComponent(LearningPageComponent);
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('.word-card-position')?.textContent).toContain('Картка 1 з 500');
+    expect(compiled.querySelector('.word-card-position')?.textContent).toContain('Картка 1 з 1000');
     expect(compiled.querySelector('.hidden-hint')?.textContent).toContain('Згадай значення');
     expect(compiled.querySelector('.slider-button-label')?.textContent).toContain('Назад');
     expect(compiled.querySelectorAll('.slider-button-label')[1]?.textContent).toContain('Далі');
@@ -80,7 +82,7 @@ describe('AppComponent', () => {
   it('persists and restores study language and theme settings', fakeAsync(() => {
     window.localStorage.removeItem('wortzeit-settings-v1');
     window.localStorage.removeItem('deutsch-kompass-settings-v1');
-    const fixture = TestBed.createComponent(AppComponent);
+    const fixture = TestBed.createComponent(LearningPageComponent);
     fixture.detectChanges();
     tick(0);
 
@@ -92,7 +94,7 @@ describe('AppComponent', () => {
       theme: 'dark',
     });
 
-    const restoredFixture = TestBed.createComponent(AppComponent);
+    const restoredFixture = TestBed.createComponent(LearningPageComponent);
     restoredFixture.detectChanges();
     tick(0);
     expect(restoredFixture.componentInstance.learningLanguage).toBe('en');
@@ -107,7 +109,7 @@ describe('AppComponent', () => {
     window.localStorage.removeItem('wortzeit-progress-en-v1');
     window.localStorage.removeItem('deutsch-kompass-progress-v1');
 
-    const fixture = TestBed.createComponent(AppComponent);
+    const fixture = TestBed.createComponent(LearningPageComponent);
     fixture.detectChanges();
     tick(0);
     const app = fixture.componentInstance;
@@ -145,7 +147,7 @@ describe('AppComponent', () => {
       dailyProgress: {},
     }));
 
-    const fixture = TestBed.createComponent(AppComponent);
+    const fixture = TestBed.createComponent(LearningPageComponent);
     fixture.detectChanges();
     tick(0);
 
@@ -164,7 +166,7 @@ describe('AppComponent', () => {
   }));
 
   it('tracks learned words and daily progress', () => {
-    const fixture = TestBed.createComponent(AppComponent);
+    const fixture = TestBed.createComponent(LearningPageComponent);
     const app = fixture.componentInstance;
 
     app.markLearned(vocabulary[0]);
@@ -175,7 +177,7 @@ describe('AppComponent', () => {
   });
 
   it('moves to the next sequential card after learning the current word', () => {
-    const app = TestBed.createComponent(AppComponent).componentInstance;
+    const app = TestBed.createComponent(LearningPageComponent).componentInstance;
     app.currentWord = vocabulary[10];
     app.wordIndex = 10;
 
@@ -186,7 +188,7 @@ describe('AppComponent', () => {
   });
 
   it('keeps the active card when learning a different word from the library', () => {
-    const app = TestBed.createComponent(AppComponent).componentInstance;
+    const app = TestBed.createComponent(LearningPageComponent).componentInstance;
     app.currentWord = vocabulary[10];
     app.wordIndex = 10;
 
@@ -197,7 +199,7 @@ describe('AppComponent', () => {
   });
 
   it('celebrates the daily goal once when the fifth distinct word is learned', () => {
-    const fixture = TestBed.createComponent(AppComponent);
+    const fixture = TestBed.createComponent(LearningPageComponent);
     const app = fixture.componentInstance;
     app.theme = 'dark';
 
@@ -228,7 +230,7 @@ describe('AppComponent', () => {
   });
 
   it('shows daily vocabulary counts and words in the selected calendar date', () => {
-    const app = TestBed.createComponent(AppComponent).componentInstance;
+    const app = TestBed.createComponent(LearningPageComponent).componentInstance;
     app.calendarMonth = new Date(2026, 9, 1);
     app.dailyProgress = {
       '2026-10-01': [vocabulary[0].id],
@@ -255,7 +257,7 @@ describe('AppComponent', () => {
   });
 
   it('navigates the language diary by month and does not select future dates', () => {
-    const app = TestBed.createComponent(AppComponent).componentInstance;
+    const app = TestBed.createComponent(LearningPageComponent).componentInstance;
     app.calendarMonth = new Date(2026, 9, 1);
     app.changeCalendarMonth(-1);
     expect(app.calendarMonth).toEqual(new Date(2026, 8, 1));
@@ -273,7 +275,7 @@ describe('AppComponent', () => {
   });
 
   it('moves through vocabulary cards in both directions', () => {
-    const app = TestBed.createComponent(AppComponent).componentInstance;
+    const app = TestBed.createComponent(LearningPageComponent).componentInstance;
 
     app.showNextWord();
     expect(app.currentWord).toEqual(vocabulary[1]);
@@ -284,7 +286,7 @@ describe('AppComponent', () => {
   });
 
   it('animates card changes when moving through words', fakeAsync(() => {
-    const fixture = TestBed.createComponent(AppComponent);
+    const fixture = TestBed.createComponent(LearningPageComponent);
     fixture.detectChanges();
     const slide = fixture.nativeElement.querySelector('.word-slide') as HTMLElement;
     const animation = jasmine.createSpyObj<Animation>('animation', ['cancel']);
@@ -317,7 +319,7 @@ describe('AppComponent', () => {
   }));
 
   it('starts a lesson with the next unlearned word and clears library filters', () => {
-    const fixture = TestBed.createComponent(AppComponent);
+    const fixture = TestBed.createComponent(LearningPageComponent);
     const app = fixture.componentInstance;
 
     app.selectTab('texts');
@@ -336,7 +338,7 @@ describe('AppComponent', () => {
   });
 
   it('starts learning from the main button, including the lesson scroll target', () => {
-    const fixture = TestBed.createComponent(AppComponent);
+    const fixture = TestBed.createComponent(LearningPageComponent);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
     const learningSection = document.getElementById('learning');
@@ -351,7 +353,7 @@ describe('AppComponent', () => {
   });
 
   it('shows a completion message when starting after all words are learned', () => {
-    const app = TestBed.createComponent(AppComponent).componentInstance;
+    const app = TestBed.createComponent(LearningPageComponent).componentInstance;
     app.learned = new Set(vocabulary.map((word) => word.id));
     app.activeTab = 'texts';
     app.startLearning();
@@ -363,7 +365,7 @@ describe('AppComponent', () => {
   });
 
   it('handles answer, learned, navigation and feedback dismissal buttons', () => {
-    const fixture = TestBed.createComponent(AppComponent);
+    const fixture = TestBed.createComponent(LearningPageComponent);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
 
@@ -396,7 +398,7 @@ describe('AppComponent', () => {
   });
 
   it('handles tabs, search, categories, favorites and library learned buttons', () => {
-    const fixture = TestBed.createComponent(AppComponent);
+    const fixture = TestBed.createComponent(LearningPageComponent);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
 
@@ -471,7 +473,7 @@ describe('AppComponent', () => {
   });
 
   it('preserves the daily count and avoids duplicate progress for an already learned word', () => {
-    const app = TestBed.createComponent(AppComponent).componentInstance;
+    const app = TestBed.createComponent(LearningPageComponent).componentInstance;
     app.markLearned(vocabulary[0]);
     const learnedCount = app.learnedCount;
     const todayCount = app.todayCount;
@@ -484,17 +486,18 @@ describe('AppComponent', () => {
   });
 
   it('uses Ukrainian categories and phrases', () => {
-    const app = TestBed.createComponent(AppComponent).componentInstance;
+    const app = TestBed.createComponent(LearningPageComponent).componentInstance;
 
     expect(app.categories[0]).toBe('Усі слова');
     expect(app.categories).toContain('Дім і побут');
     expect(phrases[0].translation).toBe('Доброго ранку!');
   });
 
-  it('includes exactly 500 unique A2 vocabulary entries with complete study examples', () => {
-    expect(vocabulary.length).toBe(500);
-    expect(new Set(vocabulary.map((word) => word.word)).size).toBe(500);
-    expect(new Set(vocabulary.map((word) => word.id)).size).toBe(500);
+  it('includes exactly 1000 unique vocabulary entries with complete study examples', () => {
+    expect(vocabulary.length).toBe(1000);
+    expect(new Set(vocabulary.map((word) => word.word)).size).toBe(1000);
+    expect(new Set(vocabulary.map((word) => word.translationEnglish)).size).toBe(1000);
+    expect(new Set(vocabulary.map((word) => word.id)).size).toBe(1000);
     expect(vocabulary.every((word) =>
       word.translation && word.translationEnglish && word.category && word.phrase && word.example,
     )).toBeTrue();

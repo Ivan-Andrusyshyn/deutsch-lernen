@@ -1,0 +1,14 @@
+<article class="vocab-card">
+  <div class="vocab-card-top">
+    <span class="word-category">{{ word.category }}</span>
+    <button class="favorite-button" [class.favorite]="favorite" type="button" (click)="favoriteToggled.emit(word)" [attr.aria-label]="favorite ? 'Прибрати з обраного' : 'Додати до обраного'">
+      {{ favorite ? '♥' : '♡' }}
+    </button>
+  </div>
+  <h4 [attr.lang]="language">{{ displayWord }}</h4>
+  <p class="vocab-translation">{{ word.translation }}</p>
+  <div class="vocab-example" *ngIf="language === 'de'"><span>{{ word.phrase }}</span><small>{{ word.example }}</small></div>
+  <button class="learned-button" [class.is-learned]="learned" type="button" (click)="learnedToggled.emit(word)">
+    <span>{{ learned ? '✓' : '+' }}</span> {{ learned ? 'Вивчено' : 'Позначити вивченим' }}
+  </button>
+</article>

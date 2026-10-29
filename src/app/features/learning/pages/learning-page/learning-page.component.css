@@ -330,8 +330,7 @@ main,
 .section-heading,
 .library-heading,
 .daily-card-top,
-.daily-actions,
-.vocab-card-top {
+.daily-actions {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -692,7 +691,6 @@ main,
   gap: 12px;
 }
 
-.vocab-card,
 .phrase-card {
   min-width: 0;
   border: 1px solid #edeee9;
@@ -702,91 +700,16 @@ main,
   transition: border-color 150ms ease, transform 150ms ease, box-shadow 150ms ease;
 }
 
-.vocab-card:hover,
 .phrase-card:hover {
   transform: translateY(-2px);
   border-color: #d7e4ce;
   box-shadow: 0 7px 18px #3149360a;
 }
 
-.favorite-button {
-  width: 27px;
-  height: 27px;
-  border: 1px solid #eff0ec;
-  border-radius: 8px;
-  background: white;
-  color: #a1a69f;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.favorite-button.favorite {
-  border-color: #f3dfd6;
-  background: #fff4ee;
-  color: #d9836c;
-}
-
-.vocab-card h4 {
-  margin: 9px 0 3px;
-  font-family: Georgia, serif;
-  font-size: 19px;
-  font-weight: 400;
-}
-
 .vocab-translation {
   margin: 0;
   color: #718175;
   font-size: 11px;
-}
-
-.vocab-example {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-top: 12px;
-  border-top: 1px solid #f0f1ed;
-  padding-top: 10px;
-}
-
-.vocab-example span {
-  color: #596b5d;
-  font-size: 10px;
-  font-weight: 600;
-}
-
-.vocab-example small {
-  overflow: hidden;
-  color: #949a92;
-  font-size: 9px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.learned-button {
-  width: 100%;
-  min-height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  margin-top: 12px;
-  border: 1px solid #e8ebe4;
-  border-radius: 6px;
-  background: #fff;
-  color: #738078;
-  font: inherit;
-  font-size: 9px;
-  cursor: pointer;
-}
-
-.learned-button span {
-  font-size: 12px;
-}
-
-.learned-button.is-learned {
-  border-color: #e1ebd5;
-  background: #f6f9ee;
-  color: #648157;
 }
 
 .empty-state {
@@ -1569,10 +1492,6 @@ main,
   .phrase-grid {
     grid-template-columns: 1fr;
     gap: 9px;
-  }
-
-  .vocab-card {
-    padding: 13px;
   }
 
   .phrase-card h3 {

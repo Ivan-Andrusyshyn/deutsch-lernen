@@ -15,7 +15,7 @@
         <span aria-hidden="true">{{ theme === 'light' ? '☾' : '☀' }}</span>
         <span class="theme-toggle-label">{{ theme === 'light' ? 'Темна' : 'Світла' }}</span>
       </button>
-      <div class="level-pill"><span>✦</span> {{ learningLanguage === 'de' ? 'Німецька A2' : 'Англійська' }}</div>
+      <div class="level-pill"><span>✦</span> {{ learningLanguage === 'de' ? 'Німецька' : 'Англійська' }}</div>
     </div>
   </header>
 
@@ -32,11 +32,11 @@
           <div class="learning-language-switch">
             <button type="button" [class.active]="learningLanguage === 'de'" [attr.aria-pressed]="learningLanguage === 'de'" (click)="setLearningLanguage('de')">
               <span class="language-code">DE</span>
-              <span class="language-option-text"><strong>Німецьку</strong><small>500 слів · A2</small></span>
+              <span class="language-option-text"><strong>Німецьку</strong><small>1000 слів</small></span>
             </button>
             <button type="button" [class.active]="learningLanguage === 'en'" [attr.aria-pressed]="learningLanguage === 'en'" (click)="setLearningLanguage('en')">
               <span class="language-code">EN</span>
-              <span class="language-option-text"><strong>Англійську</strong><small>500 слів</small></span>
+              <span class="language-option-text"><strong>Англійську</strong><small>1000 слів</small></span>
             </button>
           </div>
         </div>
@@ -149,7 +149,7 @@
           <p class="section-kicker">ТВОЯ МІНІПРАКТИКА</p>
           <h2>Що вивчатимемо?</h2>
         </div>
-        <span class="total-pill">{{ words.length }} слів · {{ learningLanguageName }}{{ learningLanguage === 'de' ? ' A2' : '' }}</span>
+        <span class="total-pill">{{ words.length }} слів · {{ learningLanguageName }}</span>
       </div>
 
       <nav class="tab-list" aria-label="Обрати матеріал">
@@ -216,7 +216,7 @@
         </ng-template>
 
         <div class="library-heading">
-          <div><h3>Словник {{ learningLanguageName }}{{ learningLanguage === 'de' ? ' A2' : '' }}</h3><p>Обирай слова, які хочеш повторити</p></div>
+          <div><h3>Словник {{ learningLanguageName }}</h3><p>Обирай слова, які хочеш повторити</p></div>
           <label class="search-box">
             <span aria-hidden="true">⌕</span>
             <input type="search" [(ngModel)]="searchQuery" placeholder="Знайти слово…" [attr.aria-label]="'Пошук слів ' + learningLanguageName" />
@@ -228,20 +228,16 @@
           </button>
         </div>
         <div class="word-grid">
-          <article class="vocab-card" *ngFor="let word of visibleWords">
-            <div class="vocab-card-top">
-              <span class="word-category">{{ word.category }}</span>
-              <button class="favorite-button" [class.favorite]="isFavorite(word)" type="button" (click)="toggleFavorite(word)" [attr.aria-label]="isFavorite(word) ? 'Прибрати з обраного' : 'Додати до обраного'">
-                {{ isFavorite(word) ? '♥' : '♡' }}
-              </button>
-            </div>
-            <h4 [attr.lang]="learningLanguage">{{ displayWord(word) }}</h4>
-            <p class="vocab-translation">{{ displayTranslation(word) }}</p>
-            <div class="vocab-example" *ngIf="learningLanguage === 'de'"><span>{{ word.phrase }}</span><small>{{ word.example }}</small></div>
-            <button class="learned-button" [class.is-learned]="isLearned(word)" type="button" (click)="markLearned(word)">
-              <span>{{ isLearned(word) ? '✓' : '+' }}</span> {{ isLearned(word) ? 'Вивчено' : 'Позначити вивченим' }}
-            </button>
-          </article>
+          <app-vocabulary-card
+            *ngFor="let word of visibleWords"
+            [word]="word"
+            [language]="learningLanguage"
+            [displayWord]="displayWord(word)"
+            [favorite]="isFavorite(word)"
+            [learned]="isLearned(word)"
+            (favoriteToggled)="toggleFavorite($event)"
+            (learnedToggled)="markLearned($event)">
+          </app-vocabulary-card>
         </div>
         <p class="empty-state" *ngIf="visibleWords.length === 0">Нічого не знайдено. Зміни запит або категорію.</p>
       </ng-container>

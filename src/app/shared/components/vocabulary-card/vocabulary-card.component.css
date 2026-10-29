@@ -1,0 +1,148 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.vocab-card {
+  min-width: 0;
+  height: 100%;
+  box-sizing: border-box;
+  border: 1px solid #edeee9;
+  border-radius: 10px;
+  padding: 14px;
+  background: #fff;
+  transition: border-color 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+}
+
+.vocab-card:hover {
+  transform: translateY(-2px);
+  border-color: #d7e4ce;
+  box-shadow: 0 7px 18px #3149360a;
+}
+
+.vocab-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.word-category {
+  border: 1px solid #e8eee1;
+  border-radius: 999px;
+  padding: 4px 8px;
+  background: #f7f9f2;
+  color: #78866e;
+  font-size: 9px;
+}
+
+.favorite-button {
+  width: 27px;
+  height: 27px;
+  border: 1px solid #eff0ec;
+  border-radius: 8px;
+  background: white;
+  color: #a1a69f;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.favorite-button.favorite {
+  border-color: #f3dfd6;
+  background: #fff4ee;
+  color: #d9836c;
+}
+
+.vocab-card h4 {
+  margin: 9px 0 3px;
+  font-family: Georgia, serif;
+  font-size: 19px;
+  font-weight: 400;
+}
+
+.vocab-translation {
+  margin: 0;
+  color: #718175;
+  font-size: 11px;
+}
+
+.vocab-example {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 12px;
+  border-top: 1px solid #f0f1ed;
+  padding-top: 10px;
+}
+
+.vocab-example span {
+  color: #596b5d;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.vocab-example small {
+  overflow: hidden;
+  color: #949a92;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.learned-button {
+  width: 100%;
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 12px;
+  border: 1px solid #e8ebe4;
+  border-radius: 6px;
+  background: #fff;
+  color: #738078;
+  font: inherit;
+  font-size: 9px;
+  cursor: pointer;
+}
+
+.learned-button span {
+  font-size: 12px;
+}
+
+.learned-button.is-learned {
+  border-color: #e1ebd5;
+  background: #f6f9ee;
+  color: #648157;
+}
+
+:host-context(.theme-dark) .vocab-card {
+  border-color: #394740;
+  background: #26332d;
+}
+
+:host-context(.theme-dark) .favorite-button,
+:host-context(.theme-dark) .learned-button {
+  border-color: #3a4840;
+  background: #2b3932;
+  color: #c4cec5;
+}
+
+:host-context(.theme-dark) .favorite-button.favorite {
+  border-color: #744f45;
+  background: #46342f;
+  color: #efaa91;
+}
+
+:host-context(.theme-dark) .vocab-card h4 {
+  color: #e5eee4;
+}
+
+:host-context(.theme-dark) .vocab-translation {
+  color: #b6c4b8;
+}
+
+@media (max-width: 520px) {
+  .vocab-card {
+    padding: 13px;
+  }
+}

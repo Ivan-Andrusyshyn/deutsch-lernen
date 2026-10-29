@@ -1,17 +1,6 @@
+import type { Phrase, ReadingText, WordCard } from '../../../core/models/vocabulary.model';
 import { englishTranslations } from './english-translations';
-
-export type WordKind = 'noun' | 'verb' | 'adjective';
-
-export interface WordCard {
-  id: string;
-  word: string;
-  translation: string;
-  translationEnglish: string;
-  category: string;
-  kind: WordKind;
-  phrase: string;
-  example: string;
-}
+import { vocabularyExpansion } from './vocabulary-expansion';
 
 const ukrainianTerms: Record<string, string> = {
   квартира: 'квартира', комната: 'кімната', кухня: 'кухня', ванная: 'ванна кімната',
@@ -924,7 +913,7 @@ const vocabularyWithoutEnglish: Omit<WordCard, 'translationEnglish'>[] = [
   })),
 ];
 
-export const vocabulary: WordCard[] = vocabularyWithoutEnglish.map((word) => {
+const originalVocabulary: WordCard[] = vocabularyWithoutEnglish.map((word) => {
   const translationEnglish = englishTranslations[word.word];
   if (!translationEnglish) {
     throw new Error(`Missing English vocabulary translation for "${word.word}".`);
@@ -932,10 +921,15 @@ export const vocabulary: WordCard[] = vocabularyWithoutEnglish.map((word) => {
   return { ...word, translationEnglish };
 });
 
-export interface Phrase {
-  german: string;
-  translation: string;
-  example: string;
+export const vocabulary: WordCard[] = [...originalVocabulary, ...vocabularyExpansion];
+
+const expectedVocabularySize = 1000;
+if (
+  vocabulary.length !== expectedVocabularySize ||
+  new Set(vocabulary.map((word) => word.word)).size !== expectedVocabularySize ||
+  new Set(vocabulary.map((word) => word.translationEnglish)).size !== expectedVocabularySize
+) {
+  throw new Error(`Expected ${expectedVocabularySize} unique German-English vocabulary cards.`);
 }
 
 export const phrases: Phrase[] = [
@@ -964,14 +958,6 @@ export const phrases: Phrase[] = [
   { german: 'Wie spät ist es?', translation: 'Котра година?', example: 'Entschuldigung, wie spät ist es?' },
   { german: 'Das klingt gut.', translation: 'Звучить добре.', example: 'Wir treffen uns um sechs? Das klingt gut.' },
 ];
-
-export interface ReadingText {
-  title: string;
-  level: string;
-  german: string;
-  translation: string;
-  questions: Array<{ question: string; answer: string }>;
-}
 
 export const readingTexts: ReadingText[] = [
   {
