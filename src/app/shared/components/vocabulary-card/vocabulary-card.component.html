@@ -1,24 +1,31 @@
 <article class="vocab-card">
-  <div #photoContainer class="vocab-image" [class.has-photo]="image">
-    <img *ngIf="image" [src]="image.url" [alt]="image.tags || displayWord + ' — ' + word.translation" loading="lazy" decoding="async" (error)="onPhotoError()" />
-    <a *ngIf="image" class="photo-source" [href]="image.pageUrl" target="_blank" rel="noopener noreferrer" aria-label="Джерело фото — Pixabay">
-      Pixabay
-    </a>
-    <div *ngIf="!image" class="vocab-image-fallback" role="img" [attr.aria-label]="displayWord + ' — ' + word.translation">
-      <span aria-hidden="true">{{ imageIllustration }}</span>
-      <small *ngIf="imageFailed">Фото тимчасово недоступне</small>
-    </div>
-  </div>
   <div class="vocab-card-top">
     <span class="word-category">{{ word.category }}</span>
-    <button class="favorite-button" [class.favorite]="favorite" type="button" (click)="favoriteToggled.emit(word)" [attr.aria-label]="favorite ? 'Прибрати з обраного' : 'Додати до обраного'">
-      {{ favorite ? '♥' : '♡' }}
+    <button
+      class="favorite-button"
+      [class.favorite]="favorite"
+      type="button"
+      (click)="favoriteToggled.emit(word)"
+      [attr.aria-label]="
+        favorite ? 'Прибрати з обраного' : 'Додати до обраного'
+      "
+    >
+      {{ favorite ? "♥" : "♡" }}
     </button>
   </div>
   <h4 [attr.lang]="language">{{ displayWord }}</h4>
   <p class="vocab-translation">{{ word.translation }}</p>
-  <div class="vocab-example" *ngIf="language === 'de'"><span>{{ word.phrase }}</span><small>{{ word.example }}</small></div>
-  <button class="learned-button" [class.is-learned]="learned" type="button" (click)="learnedToggled.emit(word)">
-    <span>{{ learned ? '✓' : '+' }}</span> {{ learned ? 'Вивчено' : 'Позначити вивченим' }}
+  <div class="vocab-example" *ngIf="language === 'de'">
+    <span>{{ word.phrase }}</span
+    ><small>{{ word.example }}</small>
+  </div>
+  <button
+    class="learned-button"
+    [class.is-learned]="learned"
+    type="button"
+    (click)="learnedToggled.emit(word)"
+  >
+    <span>{{ learned ? "✓" : "+" }}</span>
+    {{ learned ? "Вивчено" : "Позначити вивченим" }}
   </button>
 </article>

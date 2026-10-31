@@ -18,45 +18,6 @@ export function app(): express.Express {
   server.set('view engine', 'html');
   server.set('views', browserDistFolder);
 
-  server.get('/api/images', async (req, res) => {
-    const apiKey = process.env['IMG_TOKEN'] || process.env['PIXABAY_API_KEY'];
-    const query = req.query['q'];
-    if (!apiKey) {
-      res
-        .status(503)
-        .json({ error: 'Photo search is not configured on the server.' });
-      return;
-    }
-    if (
-      typeof query !== 'string' ||
-      !/^[\p{L}\p{N}\s'-]{1,80}$/u.test(query.trim())
-    ) {
-      res.status(400).json({ error: 'A valid photo search term is required.' });
-      return;
-    }
-
-    const normalizedQuery = query
-      .trim()
-      .replace(/\s+/g, ' ')
-      .toLocaleLowerCase('en');
-
-    try {
-      const image = await findPixabayImage(normalizedQuery, apiKey);
-      res.set('Cache-Control', 'private, max-age=86400').json({ image });
-    } catch (error) {
-      const rateLimited =
-        error instanceof Error && error.message === 'rate-limit';
-      console.error(
-        `Pixabay image lookup failed (${rateLimited ? 'rate limited' : 'provider unavailable'}).`,
-      );
-      res.status(rateLimited ? 429 : 502).json({
-        error: rateLimited
-          ? 'Photo search limit reached. Please try again later.'
-          : 'Photo provider is temporarily unavailable.',
-      });
-    }
-  });
-
   // Serve static files from /browser
   server.get(
     '*.*',

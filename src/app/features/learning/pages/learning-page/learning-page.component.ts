@@ -1,13 +1,20 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import type { Phrase, ReadingText, WordCard } from '../../../../core/models/vocabulary.model';
+import type {
+  Phrase,
+  ReadingText,
+  WordCard,
+} from '../../../../core/models/vocabulary.model';
 import { LearningCalendarComponent } from '../../components/learning-calendar/learning-calendar.component';
-import { LearningWordCardComponent } from '../../components/learning-word-card/learning-word-card.component';
-import { WordPaginationComponent, type WordPageSize } from '../../components/word-pagination/word-pagination.component';
+import {
+  WordPaginationComponent,
+  type WordPageSize,
+} from '../../components/word-pagination/word-pagination.component';
 import { LearningCalendarService } from '../../services/learning-calendar.service';
 import { phrases, readingTexts, vocabulary } from '../../data/vocabulary';
 import { VocabularyCardComponent } from '../../../../shared/components/vocabulary-card/vocabulary-card.component';
+import { LearningWordCardComponent } from '../../components/learning-word-card/learning-word-card.component';
 
 interface SavedProgress {
   learned: string[];
@@ -43,7 +50,10 @@ export class LearningPageComponent implements OnInit {
   readonly phrases = phrases;
   readonly readingTexts = readingTexts;
   readonly dailyGoal = 5;
-  readonly categories = ['Усі слова', ...new Set(vocabulary.map((word) => word.category))];
+  readonly categories = [
+    'Усі слова',
+    ...new Set(vocabulary.map((word) => word.category)),
+  ];
   readonly encouragements = [
     'Чудова робота! Кожен крок наближає тебе до мети.',
     'Супер! Це слово вже у твоєму активному словнику.',
@@ -89,13 +99,22 @@ export class LearningPageComponent implements OnInit {
     try {
       saved = window.localStorage.getItem('wortzeit-settings-v1');
       if (!saved) {
-        const legacySettings = window.localStorage.getItem('deutsch-kompass-settings-v1');
+        const legacySettings = window.localStorage.getItem(
+          'deutsch-kompass-settings-v1',
+        );
         if (legacySettings) {
           const parsed: unknown = JSON.parse(legacySettings);
           if (parsed && typeof parsed === 'object') {
-            const previousSettings = parsed as { translationLanguage?: unknown; theme?: unknown };
-            this.learningLanguage = previousSettings.translationLanguage === 'en' ? 'en' : 'de';
-            if (previousSettings.theme === 'light' || previousSettings.theme === 'dark') {
+            const previousSettings = parsed as {
+              translationLanguage?: unknown;
+              theme?: unknown;
+            };
+            this.learningLanguage =
+              previousSettings.translationLanguage === 'en' ? 'en' : 'de';
+            if (
+              previousSettings.theme === 'light' ||
+              previousSettings.theme === 'dark'
+            ) {
               this.theme = previousSettings.theme;
             }
             this.saveSettings();
@@ -104,11 +123,13 @@ export class LearningPageComponent implements OnInit {
       }
     } catch (error) {
       if (error instanceof DOMException) {
-        this.storageMessage = 'Браузер не дозволив доступ до збережених налаштувань.';
+        this.storageMessage =
+          'Браузер не дозволив доступ до збережених налаштувань.';
         return;
       }
       if (error instanceof SyntaxError) {
-        this.storageMessage = 'Збережені налаштування пошкоджено. Використано стандартні параметри.';
+        this.storageMessage =
+          'Збережені налаштування пошкоджено. Використано стандартні параметри.';
         return;
       }
       throw error;
@@ -118,14 +139,16 @@ export class LearningPageComponent implements OnInit {
     try {
       const settings: unknown = JSON.parse(saved);
       if (!this.isSavedSettings(settings)) {
-        this.storageMessage = 'Не вдалося прочитати збережені налаштування. Використано стандартні параметри.';
+        this.storageMessage =
+          'Не вдалося прочитати збережені налаштування. Використано стандартні параметри.';
         return;
       }
       this.learningLanguage = settings.learningLanguage;
       this.theme = settings.theme;
     } catch (error) {
       if (error instanceof SyntaxError) {
-        this.storageMessage = 'Збережені налаштування пошкоджено. Використано стандартні параметри.';
+        this.storageMessage =
+          'Збережені налаштування пошкоджено. Використано стандартні параметри.';
         return;
       }
       throw error;
@@ -161,11 +184,20 @@ export class LearningPageComponent implements OnInit {
     try {
       const progress: unknown = JSON.parse(saved);
       if (!this.isSavedProgress(progress)) {
-        this.storageMessage = 'Не вдалося прочитати збережений прогрес. Спробуй почати нове заняття.';
+        this.storageMessage =
+          'Не вдалося прочитати збережений прогрес. Спробуй почати нове заняття.';
         return;
       }
-      this.learned = new Set(progress.learned.filter((id) => this.words.some((word) => word.id === id)));
-      this.favorites = new Set(progress.favorites.filter((id) => this.words.some((word) => word.id === id)));
+      this.learned = new Set(
+        progress.learned.filter((id) =>
+          this.words.some((word) => word.id === id),
+        ),
+      );
+      this.favorites = new Set(
+        progress.favorites.filter((id) =>
+          this.words.some((word) => word.id === id),
+        ),
+      );
       this.dailyProgress = Object.fromEntries(
         Object.entries(progress.dailyProgress).map(([date, ids]) => [
           date,
@@ -174,7 +206,10 @@ export class LearningPageComponent implements OnInit {
       );
       this.currentWord = this.nextUnlearnedWord() ?? this.words[0];
       this.wordIndex = this.words.indexOf(this.currentWord);
-      if (this.learningLanguage === 'de' && !window.localStorage.getItem(this.progressStorageKey)) {
+      if (
+        this.learningLanguage === 'de' &&
+        !window.localStorage.getItem(this.progressStorageKey)
+      ) {
         this.saveProgress();
       }
     } catch (error) {
@@ -189,10 +224,14 @@ export class LearningPageComponent implements OnInit {
   get visibleWords(): WordCard[] {
     const query = this.searchQuery.trim().toLocaleLowerCase('uk');
     return this.words.filter((word) => {
-      const matchesCategory = this.activeCategory === 'Усі слова' || word.category === this.activeCategory;
+      const matchesCategory =
+        this.activeCategory === 'Усі слова' ||
+        word.category === this.activeCategory;
       const matchesQuery =
         !query ||
-        this.displayWord(word).toLocaleLowerCase(this.learningLanguage).includes(query) ||
+        this.displayWord(word)
+          .toLocaleLowerCase(this.learningLanguage)
+          .includes(query) ||
         word.translationEnglish.toLocaleLowerCase('en').includes(query) ||
         word.translation.toLocaleLowerCase('uk').includes(query) ||
         word.word.toLocaleLowerCase('de').includes(query);
@@ -215,7 +254,10 @@ export class LearningPageComponent implements OnInit {
 
   get progressPercent(): number {
     if (this.learnedCount === 0) return 0;
-    return Math.max(1, Math.round((this.learnedCount / this.words.length) * 100));
+    return Math.max(
+      1,
+      Math.round((this.learnedCount / this.words.length) * 100),
+    );
   }
 
   get todayCount(): number {
@@ -228,14 +270,19 @@ export class LearningPageComponent implements OnInit {
 
   get progressMessage(): string {
     const language = this.learningLanguageName.toLocaleLowerCase('uk');
-    if (this.progressPercent === 100) return `Усі ${this.words.length} слів ${language} вивчено — це неймовірно!`;
-    if (this.learnedCount === 0) return 'Почни з першого слова — у тебе все вийде!';
-    if (this.todayCount >= this.dailyGoal) return 'Денну ціль виконано. Ти неймовірний(-а)!';
+    if (this.progressPercent === 100)
+      return `Усі ${this.words.length} слів ${language} вивчено — це неймовірно!`;
+    if (this.learnedCount === 0)
+      return 'Почни з першого слова — у тебе все вийде!';
+    if (this.todayCount >= this.dailyGoal)
+      return 'Денну ціль виконано. Ти неймовірний(-а)!';
     return `Маленькі кроки щодня — і ${language} стане звичкою.`;
   }
 
   get encouragement(): string {
-    return this.encouragements[(this.learnedCount + this.todayCount) % this.encouragements.length];
+    return this.encouragements[
+      (this.learnedCount + this.todayCount) % this.encouragements.length
+    ];
   }
 
   get nextWord(): WordCard | undefined {
@@ -295,7 +342,10 @@ export class LearningPageComponent implements OnInit {
   }
 
   setWordPage(page: number): void {
-    const pageCount = Math.max(1, Math.ceil(this.visibleWords.length / this.wordPageSize));
+    const pageCount = Math.max(
+      1,
+      Math.ceil(this.visibleWords.length / this.wordPageSize),
+    );
     this.wordPage = Math.max(1, Math.min(page, pageCount));
   }
 
@@ -315,15 +365,20 @@ export class LearningPageComponent implements OnInit {
       this.currentWord = this.words[0];
       this.wordIndex = 0;
       this.showAnswer = false;
-      this.feedback = 'Ти вивчив(-ла) весь словник! Повтори обрані слова або обери іншу мову навчання.';
+      this.feedback =
+        'Ти вивчив(-ла) весь словник! Повтори обрані слова або обери іншу мову навчання.';
     }
     if (isPlatformBrowser(this.platformId)) {
-      document.getElementById('learning')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      document
+        .getElementById('learning')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }
 
   showPreviousWord(): void {
-    this.setCurrentWord((this.wordIndex - 1 + this.words.length) % this.words.length);
+    this.setCurrentWord(
+      (this.wordIndex - 1 + this.words.length) % this.words.length,
+    );
   }
 
   showNextWord(): void {
@@ -338,17 +393,22 @@ export class LearningPageComponent implements OnInit {
   }
 
   markLearned(word: WordCard): void {
-    if (this.learned.has(word.id)) {
-      this.feedback = 'Це слово вже позначено як вивчене. Чудова робота!';
-      return;
-    }
+    // if (this.learned.has(word.id)) {
+    //   this.feedback = 'Це слово вже позначено як вивчене. Чудова робота!';
+    //   return;
+    // }
 
     const isCurrentWord = word.id === this.currentWord.id;
     const previousTodayCount = this.todayCount;
     this.learned.add(word.id);
     const today = this.todayKey;
-    this.dailyProgress[today] = [...new Set([...(this.dailyProgress[today] ?? []), word.id])];
-    if (previousTodayCount < this.dailyGoal && this.todayCount >= this.dailyGoal) {
+    this.dailyProgress[today] = [
+      ...new Set([...(this.dailyProgress[today] ?? []), word.id]),
+    ];
+    if (
+      previousTodayCount < this.dailyGoal &&
+      this.todayCount >= this.dailyGoal
+    ) {
       this.showDailyGoalCelebration = true;
     }
     if (isCurrentWord) {
@@ -418,11 +478,15 @@ export class LearningPageComponent implements OnInit {
     };
 
     try {
-      window.localStorage.setItem(this.progressStorageKey, JSON.stringify(progress));
+      window.localStorage.setItem(
+        this.progressStorageKey,
+        JSON.stringify(progress),
+      );
       this.storageMessage = '';
     } catch (error) {
       if (error instanceof DOMException) {
-        this.storageMessage = 'Не вдалося зберегти прогрес. Перевір налаштування сховища браузера.';
+        this.storageMessage =
+          'Не вдалося зберегти прогрес. Перевір налаштування сховища браузера.';
         return;
       }
       throw error;
@@ -437,11 +501,15 @@ export class LearningPageComponent implements OnInit {
     };
 
     try {
-      window.localStorage.setItem('wortzeit-settings-v1', JSON.stringify(settings));
+      window.localStorage.setItem(
+        'wortzeit-settings-v1',
+        JSON.stringify(settings),
+      );
       this.storageMessage = '';
     } catch (error) {
       if (error instanceof DOMException) {
-        this.storageMessage = 'Не вдалося зберегти налаштування. Перевір сховище браузера.';
+        this.storageMessage =
+          'Не вдалося зберегти налаштування. Перевір сховище браузера.';
         return;
       }
       throw error;
@@ -452,7 +520,8 @@ export class LearningPageComponent implements OnInit {
     if (!value || typeof value !== 'object') return false;
     const settings = value as Partial<SavedSettings>;
     return (
-      (settings.learningLanguage === 'de' || settings.learningLanguage === 'en') &&
+      (settings.learningLanguage === 'de' ||
+        settings.learningLanguage === 'en') &&
       (settings.theme === 'light' || settings.theme === 'dark')
     );
   }
@@ -468,7 +537,8 @@ export class LearningPageComponent implements OnInit {
       typeof progress.dailyProgress === 'object' &&
       progress.dailyProgress !== null &&
       Object.values(progress.dailyProgress).every(
-        (ids) => Array.isArray(ids) && ids.every((id) => typeof id === 'string'),
+        (ids) =>
+          Array.isArray(ids) && ids.every((id) => typeof id === 'string'),
       )
     );
   }

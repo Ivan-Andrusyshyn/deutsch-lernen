@@ -14,7 +14,6 @@ import {
 } from '@angular/core';
 import { Subscription } from 'rxjs';
 import type { WordCard } from '../../../../core/models/vocabulary.model';
-import { PixabayImageService, type VocabularyImage } from '../../../../core/services/pixabay-image.service';
 
 @Component({
   selector: 'app-learning-word-card',
@@ -36,20 +35,15 @@ export class LearningWordCardComponent implements OnChanges, OnDestroy {
   @Output() next = new EventEmitter<void>();
 
   @ViewChild('wordSlide') private wordSlide?: ElementRef<HTMLElement>;
-  currentImage: VocabularyImage | null = null;
   imageLoadFailed = false;
   private imageRequest?: Subscription;
   private cardAnimation?: Animation;
   private touchStartX: number | null = null;
 
-  constructor(
-    @Inject(PLATFORM_ID) private readonly platformId: object,
-    private readonly pixabayImageService: PixabayImageService,
-  ) {}
+  constructor(@Inject(PLATFORM_ID) private readonly platformId: object) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (!changes['word'] || !this.word) return;
-    this.loadImage();
     if (!changes['word'].firstChange && this.wordSlide) this.animateCard();
   }
 
@@ -59,7 +53,9 @@ export class LearningWordCardComponent implements OnChanges, OnDestroy {
   }
 
   displayWord(): string {
-    return this.language === 'de' ? this.word.word : this.word.translationEnglish;
+    return this.language === 'de'
+      ? this.word.word
+      : this.word.translationEnglish;
   }
 
   onTouchStart(event: TouchEvent): void {
@@ -68,7 +64,8 @@ export class LearningWordCardComponent implements OnChanges, OnDestroy {
 
   onTouchEnd(event: TouchEvent): void {
     if (this.touchStartX === null) return;
-    const distance = (event.changedTouches[0]?.clientX ?? this.touchStartX) - this.touchStartX;
+    const distance =
+      (event.changedTouches[0]?.clientX ?? this.touchStartX) - this.touchStartX;
     this.touchStartX = null;
     if (Math.abs(distance) < 45) return;
     if (distance < 0) this.next.emit();
@@ -76,29 +73,14 @@ export class LearningWordCardComponent implements OnChanges, OnDestroy {
   }
 
   onImageError(): void {
-    this.currentImage = null;
     this.imageLoadFailed = true;
   }
 
-  private loadImage(): void {
-    this.imageRequest?.unsubscribe();
-    this.currentImage = null;
-    this.imageLoadFailed = false;
-    if (!isPlatformBrowser(this.platformId)) return;
-
-    this.imageRequest = this.pixabayImageService.findImage(this.word.translationEnglish).subscribe({
-      next: (image) => {
-        this.currentImage = image;
-        this.imageLoadFailed = image === null;
-      },
-      error: () => {
-        this.imageLoadFailed = true;
-      },
-    });
-  }
-
   private animateCard(): void {
-    if (!isPlatformBrowser(this.platformId) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (
+      !isPlatformBrowser(this.platformId) ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
       return;
     }
 
@@ -106,10 +88,10 @@ export class LearningWordCardComponent implements OnChanges, OnDestroy {
     requestAnimationFrame(() => {
       const slide = this.wordSlide?.nativeElement;
       if (!slide?.isConnected) return;
-      this.cardAnimation = slide.animate(
-        [{ opacity: 0.72 }, { opacity: 1 }],
-        { duration: 180, easing: 'ease-out' },
-      );
+      this.cardAnimation = slide.animate([{ opacity: 0.72 }, { opacity: 1 }], {
+        duration: 180,
+        easing: 'ease-out',
+      });
     });
   }
 }

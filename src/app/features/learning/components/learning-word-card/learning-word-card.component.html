@@ -1,34 +1,19 @@
 <article class="daily-card">
   <div class="daily-card-top">
-    <div class="daily-label"><span class="daily-dot"></span> {{ language === 'de' ? 'НІМЕЦЬКЕ СЛОВО' : 'АНГЛІЙСЬКЕ СЛОВО' }}</div>
-    <span class="word-card-position">Картка {{ position }} з {{ totalWords }}</span>
+    <div class="daily-label">
+      <span class="daily-dot"></span>
+      {{ language === "de" ? "НІМЕЦЬКЕ СЛОВО" : "АНГЛІЙСЬКЕ СЛОВО" }}
+    </div>
+    <span class="word-card-position"
+      >Картка {{ position }} з {{ totalWords }}</span
+    >
   </div>
-  <div class="word-slider" (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)">
+  <div
+    class="word-slider"
+    (touchstart)="onTouchStart($event)"
+    (touchend)="onTouchEnd($event)"
+  >
     <div #wordSlide class="word-slide">
-      <div class="word-photo" [class.has-photo]="currentImage">
-        <img
-          *ngIf="currentImage"
-          [src]="currentImage.url"
-          [alt]="currentImage.tags || word.translationEnglish"
-          loading="lazy"
-          decoding="async"
-          (error)="onImageError()"
-        />
-        <a
-          *ngIf="currentImage"
-          class="word-photo-source"
-          [href]="currentImage.pageUrl"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Джерело фото — Pixabay"
-        >Pixabay</a>
-        <div *ngIf="!currentImage" class="word-photo-placeholder" role="img" [attr.aria-label]="word.translationEnglish">
-          <span aria-hidden="true">✦</span>
-          <strong>{{ word.translationEnglish }}</strong>
-          <small *ngIf="imageLoadFailed">Фото для цього слова тимчасово недоступне</small>
-          <small *ngIf="!imageLoadFailed">Завантажуємо фото…</small>
-        </div>
-      </div>
       <div class="daily-word">
         <span class="word-category">{{ word.category }}</span>
         <h3 [attr.lang]="language">{{ displayWord() }}</h3>
@@ -36,11 +21,19 @@
           <span class="translation-label">Українською</span>
           <p class="word-hint">{{ word.translation }}</p>
         </div>
-        <p class="word-hint hidden-hint" *ngIf="!showAnswer">Згадай значення, а потім відкрий відповідь</p>
+        <p class="word-hint hidden-hint" *ngIf="!showAnswer">
+          Згадай значення, а потім відкрий відповідь
+        </p>
       </div>
       <div class="word-example" *ngIf="language === 'de'">
-        <div><span class="example-label">СЛОВОСПОЛУЧЕННЯ</span><p>{{ word.phrase }}</p></div>
-        <div><span class="example-label">У КОНТЕКСТІ</span><p>{{ word.example }}</p></div>
+        <div>
+          <span class="example-label">СЛОВОСПОЛУЧЕННЯ</span>
+          <p>{{ word.phrase }}</p>
+        </div>
+        <div>
+          <span class="example-label">У КОНТЕКСТІ</span>
+          <p>{{ word.example }}</p>
+        </div>
       </div>
       <div class="word-example english-context-note" *ngIf="language === 'en'">
         Український переклад допоможе пригадати значення англійського слова.
@@ -48,16 +41,44 @@
     </div>
   </div>
   <div class="daily-actions">
-    <button *ngIf="!showAnswer" class="outline-button" type="button" (click)="answerToggled.emit()">Показати переклад <span>⌄</span></button>
-    <button *ngIf="showAnswer" class="outline-button" type="button" (click)="answerToggled.emit()">Повторити пізніше</button>
-    <button class="primary-button" type="button" (click)="learned.emit(word)">Я запам’ятав(-ла) <span>✓</span></button>
+    <button
+      *ngIf="!showAnswer"
+      class="outline-button"
+      type="button"
+      (click)="answerToggled.emit()"
+    >
+      Показати переклад <span>⌄</span>
+    </button>
+    <button
+      *ngIf="showAnswer"
+      class="outline-button"
+      type="button"
+      (click)="answerToggled.emit()"
+    >
+      Повторити пізніше
+    </button>
+    <button class="primary-button" type="button" (click)="learned.emit(word)">
+      Я запам’ятав(-ла) <span>✓</span>
+    </button>
     <span class="encouragement-mini">У тебе все вийде! <span>✦</span></span>
   </div>
   <div class="slider-controls" aria-label="Перемикання карток">
-    <button type="button" aria-label="Попереднє слово" (click)="previous.emit()"><span aria-hidden="true">←</span><span class="slider-button-label">Назад</span></button>
-    <div class="slider-progress"><span [style.width.%]="(position / totalWords) * 100"></span></div>
+    <button
+      type="button"
+      aria-label="Попереднє слово"
+      (click)="previous.emit()"
+    >
+      <span aria-hidden="true">←</span
+      ><span class="slider-button-label">Назад</span>
+    </button>
+    <div class="slider-progress">
+      <span [style.width.%]="(position / totalWords) * 100"></span>
+    </div>
     <span class="slider-position">{{ position }} / {{ totalWords }}</span>
-    <button type="button" aria-label="Наступне слово" (click)="next.emit()"><span class="slider-button-label">Далі</span><span aria-hidden="true">→</span></button>
+    <button type="button" aria-label="Наступне слово" (click)="next.emit()">
+      <span class="slider-button-label">Далі</span
+      ><span aria-hidden="true">→</span>
+    </button>
     <span class="swipe-hint">Можна гортати свайпом</span>
   </div>
 </article>
