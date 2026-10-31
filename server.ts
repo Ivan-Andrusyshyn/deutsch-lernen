@@ -20,7 +20,6 @@ export function app(): express.Express {
 
   server.get('/api/images', async (req, res) => {
     const apiKey = process.env['IMG_TOKEN'] || process.env['PIXABAY_API_KEY'];
-    console.log('apiKey', apiKey);
     const query = req.query['q'];
     if (!apiKey) {
       res
