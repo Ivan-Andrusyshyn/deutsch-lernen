@@ -36,6 +36,10 @@ npm run serve:ssr:deutsch-kompass
 
 У другому терміналі запустіть Angular dev-сервер командою `npm start`. Він пересилає `/api` запити на сервер `localhost:4000`. SSR-команда завантажує `.env` через Node.js `--env-file` (Node.js 20.6+); у production задайте `IMG_TOKEN` у середовищі Node-сервера. Для сумісності також підтримується `PIXABAY_API_KEY`.
 
+### Деплой на Vercel
+
+Кореневий `vercel.json` збирає Angular і публікує `dist/deutsch-kompass/browser`; `api/images.ts` обслуговує `/api/images` як Vercel Function. У Vercel додайте Environment Variable `IMG_TOKEN` для Production і Preview та зробіть redeploy. Не завантажуйте `.env` у Git.
+
 ## Можливості
 
 - Виразний вибір мови навчання: німецька або англійська; назви категорій та інтерфейс лишаються українською.
