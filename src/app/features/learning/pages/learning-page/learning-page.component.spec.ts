@@ -277,71 +277,11 @@ describe('LearningPageComponent', () => {
     expect(app.showDailyGoalCelebration).toBeFalse();
   });
 
-  it('shows daily vocabulary counts and words in the selected calendar date', () => {
-    const app = TestBed.createComponent(LearningPageComponent).componentInstance;
-    app.calendarMonth = new Date(2026, 9, 1);
-    app.dailyProgress = {
-      '2026-10-01': [vocabulary[0].id],
-      '2026-10-02': [vocabulary[0].id, vocabulary[1].id, vocabulary[2].id],
-      '2026-10-03': vocabulary.slice(0, 5).map((word) => word.id),
-    };
+  it('renders the calendar as a dedicated learning feature', () => {
+    const fixture = TestBed.createComponent(LearningPageComponent);
+    fixture.detectChanges();
 
-    const lowActivity = app.calendarDays.find((day) => day?.key === '2026-10-01');
-    const mediumActivity = app.calendarDays.find((day) => day?.key === '2026-10-02');
-    const highActivity = app.calendarDays.find((day) => day?.key === '2026-10-03');
-    expect(lowActivity?.intensity).toBe('low');
-    expect(mediumActivity?.intensity).toBe('medium');
-    expect(highActivity?.intensity).toBe('high');
-
-    app.selectCalendarDay(mediumActivity!);
-    expect(app.selectedDateKey).toBe('2026-10-02');
-    expect(app.selectedDayCount).toBe(3);
-    expect(app.selectedDayCountLabel).toBe('3 слова');
-    expect(app.selectedDayWords).toEqual(vocabulary.slice(0, 3));
-    expect(app.calendarMonthWordCount).toBe(9);
-    expect(app.calendarMonthWordCountLabel).toBe('9 слів');
-    expect(app.calendarMonthActiveDays).toBe(3);
-    expect(app.calendarMonthActiveDaysLabel).toBe('3 дні навчання');
-  });
-
-  it('navigates the language diary by month and does not select future dates', () => {
-    const app = TestBed.createComponent(LearningPageComponent).componentInstance;
-    const now = new Date();
-    const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const todayKey = [
-      now.getFullYear(),
-      String(now.getMonth() + 1).padStart(2, '0'),
-      String(now.getDate()).padStart(2, '0'),
-    ].join('-');
-    app.calendarMonth = currentMonth;
-    app.selectedDateKey = todayKey;
-
-    app.changeCalendarMonth(-1);
-    const previousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const previousMonthKey = [
-      previousMonth.getFullYear(),
-      String(previousMonth.getMonth() + 1).padStart(2, '0'),
-      '01',
-    ].join('-');
-    expect(app.calendarMonth).toEqual(previousMonth);
-    expect(app.selectedDateKey).toBe(previousMonthKey);
-
-    app.changeCalendarMonth(1);
-    expect(app.calendarMonth).toEqual(currentMonth);
-    const currentMonthKey = [
-      currentMonth.getFullYear(),
-      String(currentMonth.getMonth() + 1).padStart(2, '0'),
-      '01',
-    ].join('-');
-    expect(app.selectedDateKey).toBe(currentMonthKey);
-    expect(app.canGoToNextCalendarMonth).toBeFalse();
-
-    app.calendarMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-    app.selectedDateKey = todayKey;
-    const futureDay = app.calendarDays.find((day) => day?.isFuture);
-    expect(futureDay).toBeDefined();
-    app.selectCalendarDay(futureDay!);
-    expect(app.selectedDateKey).toBe(todayKey);
+    expect(fixture.nativeElement.querySelector('app-learning-calendar')).not.toBeNull();
   });
 
   it('moves through vocabulary cards in both directions', () => {

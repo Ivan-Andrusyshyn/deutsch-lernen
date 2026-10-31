@@ -1,0 +1,58 @@
+<section class="language-diary" aria-labelledby="diary-title">
+  <div class="diary-header">
+    <div>
+      <p class="section-kicker">ТВОЯ ІСТОРІЯ</p>
+      <h3 id="diary-title">Мовний щоденник</h3>
+    </div>
+    <div class="diary-month-nav">
+      <button type="button" aria-label="Попередній місяць" (click)="changeMonth(-1)">‹</button>
+      <span aria-live="polite">{{ calendarMonthLabel }}</span>
+      <button type="button" aria-label="Наступний місяць" [disabled]="!canGoToNextMonth" (click)="changeMonth(1)">›</button>
+    </div>
+  </div>
+  <div class="diary-calendar" role="grid" [attr.aria-label]="'Календар вивчених слів: ' + calendarMonthLabel">
+    <span class="diary-weekday" role="columnheader" *ngFor="let weekday of weekdays">{{ weekday }}</span>
+    <ng-container *ngFor="let day of calendarDays">
+      <span *ngIf="!day" class="diary-empty-day" role="gridcell" aria-hidden="true"></span>
+      <button
+        *ngIf="day"
+        type="button"
+        role="gridcell"
+        class="diary-day"
+        [class.activity-low]="day.intensity === 'low'"
+        [class.activity-medium]="day.intensity === 'medium'"
+        [class.activity-high]="day.intensity === 'high'"
+        [class.is-today]="day.isToday"
+        [class.is-selected]="day.isSelected"
+        [disabled]="day.isFuture"
+        [attr.aria-selected]="day.isSelected"
+        [attr.aria-label]="day.day + ' ' + calendarMonthLabel + ', вивчено слів: ' + day.count"
+        (click)="selectDay(day)">
+        <span class="diary-day-number">{{ day.day }}</span>
+        <span class="diary-day-count">{{ day.count > 0 ? day.count + ' сл.' : '—' }}</span>
+      </button>
+    </ng-container>
+  </div>
+  <div class="diary-legend" aria-label="Кольори кількості вивчених слів">
+    <span><i class="legend-dot activity-low"></i>1–2</span>
+    <span><i class="legend-dot activity-medium"></i>3–4</span>
+    <span><i class="legend-dot activity-high"></i>5+</span>
+  </div>
+  <div class="diary-month-summary">
+    <span>{{ monthActiveDaysLabel }}</span>
+    <strong>{{ monthWordCountLabel }}</strong>
+  </div>
+  <div class="diary-day-detail" aria-live="polite">
+    <div class="diary-detail-heading">
+      <h4>{{ selectedDayLabel }}</h4>
+      <span>{{ selectedDayCountLabel }}</span>
+    </div>
+    <p *ngIf="selectedDayWords.length === 0" class="diary-empty-message">Цього дня слова ще не вивчалися.</p>
+    <ul *ngIf="selectedDayWords.length > 0" class="diary-word-list">
+      <li *ngFor="let word of selectedDayWords">
+        <strong [attr.lang]="language">{{ displayWord(word) }}</strong>
+        <span>{{ word.translation }}</span>
+      </li>
+    </ul>
+  </div>
+</section>

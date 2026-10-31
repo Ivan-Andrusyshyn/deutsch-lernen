@@ -10,70 +10,6 @@
   color: var(--ink);
 }
 
-.word-photo {
-  position: relative;
-  width: min(100%, 560px);
-  aspect-ratio: 16 / 7;
-  display: grid;
-  overflow: hidden;
-  margin: 20px auto 0;
-  place-items: center;
-  border: 1px solid #e4eadc;
-  border-radius: 15px;
-  background: linear-gradient(135deg, #f3f5e9, #e6eee0);
-}
-
-.word-photo img {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
-}
-
-.word-photo-placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  padding: 12px;
-  color: #78866e;
-  text-align: center;
-}
-
-.word-photo-placeholder span {
-  color: #8da77e;
-  font-size: 30px;
-}
-
-.word-photo-placeholder strong {
-  font-family: Georgia, serif;
-  font-size: clamp(17px, 3vw, 25px);
-  font-weight: 400;
-}
-
-.word-photo-placeholder small {
-  font-size: 10px;
-}
-
-.word-photo-source {
-  position: absolute;
-  right: 8px;
-  bottom: 8px;
-  border-radius: 5px;
-  padding: 4px 7px;
-  background: rgb(25 35 28 / 72%);
-  color: #fff;
-  font-size: 10px;
-  text-decoration: none;
-}
-
-.word-photo-source:hover {
-  background: rgb(25 35 28 / 90%);
-}
-
 .app-shell {
   overflow: hidden;
   background: var(--paper);
@@ -392,9 +328,7 @@ main,
 .progress-heading,
 .progress-foot,
 .section-heading,
-.library-heading,
-.daily-card-top,
-.daily-actions {
+.library-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -615,28 +549,6 @@ main,
   border-color: #f1dfc9;
   background: #fff8ee;
   color: #8d633d;
-}
-
-.outline-button {
-  border: 1px solid #dde3d6;
-  background: #fff;
-  color: #5a6b5e;
-  box-shadow: none;
-}
-
-.outline-button:hover {
-  border-color: #b4c6aa;
-  background: #fbfdf8;
-}
-
-.encouragement-mini {
-  margin-left: auto;
-  color: #a2a18f;
-  font-size: 10px;
-}
-
-.encouragement-mini span {
-  color: #d6a550;
 }
 
 .complete-card {
@@ -1261,18 +1173,6 @@ main,
     padding: 18px;
   }
 
-  .daily-card {
-    padding: 24px 24px 20px;
-  }
-
-  .word-photo {
-    aspect-ratio: 16 / 9;
-  }
-
-  .daily-word {
-    min-height: 165px;
-  }
-
   .word-grid,
   .phrase-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1422,134 +1322,6 @@ main,
   .tab-count {
     padding: 2px 4px;
     font-size: 8px;
-  }
-
-  .daily-card {
-    margin-top: 15px;
-    border-radius: 17px;
-    padding: 18px 16px 16px;
-  }
-
-  .word-photo {
-    width: 100%;
-    aspect-ratio: 16 / 10;
-    margin-top: 13px;
-    border-radius: 12px;
-  }
-
-  .daily-card-top {
-    align-items: center;
-    gap: 9px;
-    padding-bottom: 12px;
-  }
-
-  .daily-label {
-    font-size: 9px;
-    letter-spacing: 0.7px;
-  }
-
-  .word-card-position {
-    padding: 6px 8px;
-    font-size: 10px;
-  }
-
-  .daily-word {
-    min-height: 160px;
-    padding: 20px 0 19px;
-  }
-
-  .daily-word h3 {
-    max-width: 100%;
-    margin: 11px 0 9px;
-    font-size: clamp(36px, 10vw, 48px);
-  }
-
-  .word-hint {
-    font-size: 18px;
-  }
-
-  .hidden-hint {
-    max-width: 250px;
-    font-size: 12px;
-    line-height: 1.5;
-  }
-
-  .translation-reveal {
-    min-width: 135px;
-    padding: 9px 16px;
-  }
-
-  .word-example {
-    grid-template-columns: 1fr;
-    gap: 8px;
-    padding-top: 14px;
-  }
-
-  .word-example > div {
-    min-height: 0;
-    padding: 11px 12px;
-  }
-
-  .word-example p {
-    font-size: 12px;
-  }
-
-  .daily-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 9px;
-    margin-top: 15px;
-  }
-
-  .daily-actions > .outline-button:only-child {
-    grid-column: 1 / -1;
-    width: 100%;
-  }
-
-  .slider-controls {
-    display: grid;
-    grid-template-columns: auto minmax(35px, 1fr) auto auto;
-    gap: 8px;
-    margin-top: 16px;
-    padding-top: 14px;
-  }
-
-  .slider-controls > button {
-    min-width: 70px;
-    min-height: 44px;
-    gap: 6px;
-    border-radius: 10px;
-    padding-inline: 8px;
-    font-size: 11px;
-  }
-
-  .slider-progress {
-    width: auto;
-  }
-
-  .slider-position {
-    min-width: 45px;
-    font-size: 11px;
-  }
-
-  .swipe-hint {
-    grid-column: 1 / -1;
-    margin: 0;
-    font-size: 10px;
-    text-align: center;
-  }
-
-  .daily-actions .primary-button,
-  .daily-actions .outline-button {
-    min-width: 0;
-    min-height: 48px;
-    gap: 6px;
-    padding-inline: 10px;
-    font-size: 11px;
-  }
-
-  .encouragement-mini {
-    display: none;
   }
 
   .library-heading {

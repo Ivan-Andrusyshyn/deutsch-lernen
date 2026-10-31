@@ -1,0 +1,136 @@
+:host {
+  display: block;
+}
+
+.daily-card-top,
+.daily-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.daily-actions {
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.outline-button {
+  border: 1px solid #dde3d6;
+  background: #fff;
+  color: #5a6b5e;
+  box-shadow: none;
+}
+
+.outline-button:hover {
+  border-color: #b4c6aa;
+  background: #fbfdf8;
+}
+
+.encouragement-mini {
+  margin-left: auto;
+  color: #a2a18f;
+  font-size: 10px;
+}
+
+.encouragement-mini span {
+  color: #d6a550;
+}
+
+.word-photo {
+  position: relative;
+  width: min(100%, 560px);
+  aspect-ratio: 16 / 7;
+  display: grid;
+  overflow: hidden;
+  margin: 20px auto 0;
+  place-items: center;
+  border: 1px solid #e4eadc;
+  border-radius: 15px;
+  background: linear-gradient(135deg, #f3f5e9, #e6eee0);
+}
+
+.word-photo img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.word-photo-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 12px;
+  color: #78866e;
+  text-align: center;
+}
+
+.word-photo-placeholder span {
+  color: #8da77e;
+  font-size: 30px;
+}
+
+.word-photo-placeholder strong {
+  font-family: Georgia, serif;
+  font-size: clamp(17px, 3vw, 25px);
+  font-weight: 400;
+}
+
+.word-photo-placeholder small {
+  font-size: 10px;
+}
+
+.word-photo-source {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  border-radius: 5px;
+  padding: 4px 7px;
+  background: rgb(25 35 28 / 72%);
+  color: #fff;
+  font-size: 10px;
+  text-decoration: none;
+}
+
+.word-photo-source:hover {
+  background: rgb(25 35 28 / 90%);
+}
+
+@media (max-width: 760px) {
+  .word-photo {
+    aspect-ratio: 16 / 9;
+  }
+}
+
+@media (max-width: 520px) {
+  .daily-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+    margin-top: 15px;
+  }
+
+  .word-photo {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    margin-top: 13px;
+    border-radius: 12px;
+  }
+
+  .daily-actions .primary-button,
+  .daily-actions .outline-button {
+    min-width: 0;
+    min-height: 48px;
+    gap: 6px;
+    padding-inline: 10px;
+    font-size: 11px;
+  }
+
+  .encouragement-mini {
+    display: none;
+  }
+}

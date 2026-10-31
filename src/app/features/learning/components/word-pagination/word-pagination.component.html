@@ -1,0 +1,25 @@
+<ng-container *ngIf="totalItems > 0">
+  <div class="word-pagination-toolbar">
+    <label class="page-size-control">
+      <span>Слів на сторінці</span>
+      <select [value]="pageSize" (change)="selectPageSize($event)" aria-label="Кількість слів на сторінці">
+        <option value="10">10</option>
+        <option value="20">20</option>
+      </select>
+    </label>
+    <span class="word-range" aria-live="polite">{{ firstItem }}–{{ lastItem }} з {{ totalItems }} слів</span>
+  </div>
+  <nav class="word-pagination" *ngIf="pageCount > 1" aria-label="Сторінки словника">
+    <button type="button" class="page-navigation" (click)="selectPage(currentPage - 1)" [disabled]="currentPage === 1" aria-label="Попередня сторінка">← <span>Назад</span></button>
+    <button
+      *ngFor="let page of visiblePages"
+      type="button"
+      [class.current-page]="currentPage === page"
+      [attr.aria-current]="currentPage === page ? 'page' : null"
+      [attr.aria-label]="'Сторінка ' + page"
+      (click)="selectPage(page)">
+      {{ page }}
+    </button>
+    <button type="button" class="page-navigation" (click)="selectPage(currentPage + 1)" [disabled]="currentPage === pageCount" aria-label="Наступна сторінка"><span>Далі</span> →</button>
+  </nav>
+</ng-container>
