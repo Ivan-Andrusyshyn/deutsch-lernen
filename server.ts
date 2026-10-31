@@ -20,23 +20,33 @@ export function app(): express.Express {
 
   server.get('/api/images', async (req, res) => {
     const apiKey = process.env['IMG_TOKEN'] || process.env['PIXABAY_API_KEY'];
+    console.log('apiKey', apiKey);
     const query = req.query['q'];
     if (!apiKey) {
-      res.status(503).json({ error: 'Photo search is not configured on the server.' });
+      res
+        .status(503)
+        .json({ error: 'Photo search is not configured on the server.' });
       return;
     }
-    if (typeof query !== 'string' || !/^[\p{L}\p{N}\s'-]{1,80}$/u.test(query.trim())) {
+    if (
+      typeof query !== 'string' ||
+      !/^[\p{L}\p{N}\s'-]{1,80}$/u.test(query.trim())
+    ) {
       res.status(400).json({ error: 'A valid photo search term is required.' });
       return;
     }
 
-    const normalizedQuery = query.trim().replace(/\s+/g, ' ').toLocaleLowerCase('en');
+    const normalizedQuery = query
+      .trim()
+      .replace(/\s+/g, ' ')
+      .toLocaleLowerCase('en');
 
     try {
       const image = await findPixabayImage(normalizedQuery, apiKey);
       res.set('Cache-Control', 'private, max-age=86400').json({ image });
     } catch (error) {
-      const rateLimited = error instanceof Error && error.message === 'rate-limit';
+      const rateLimited =
+        error instanceof Error && error.message === 'rate-limit';
       console.error(
         `Pixabay image lookup failed (${rateLimited ? 'rate limited' : 'provider unavailable'}).`,
       );
