@@ -1,4 +1,6 @@
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { of } from 'rxjs';
+import { PixabayImageService } from '../../../../core/services/pixabay-image.service';
 import { LearningPageComponent } from './learning-page.component';
 import { phrases, readingTexts, vocabulary } from '../../data/vocabulary';
 
@@ -6,6 +8,10 @@ describe('LearningPageComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [LearningPageComponent],
+      providers: [{
+        provide: PixabayImageService,
+        useValue: { findImage: () => of(null) },
+      }],
     }).compileComponents();
   });
 
@@ -31,6 +37,8 @@ describe('LearningPageComponent', () => {
 
     expect(app.displayWord(word)).toBe(germanWord);
     expect(app.displayTranslation(word)).toBe(ukrainianTranslation);
+    app.searchQuery = 'apartment';
+    expect(app.visibleWords).toContain(word);
     app.setLearningLanguage('en');
 
     expect(app.displayWord(word)).toBe('the apartment');
@@ -70,6 +78,7 @@ describe('LearningPageComponent', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('.word-card-position')?.textContent).toContain('Картка 1 з 1000');
     expect(compiled.querySelector('.hidden-hint')?.textContent).toContain('Згадай значення');
+    expect(compiled.querySelector('.daily-actions .primary-button')?.textContent).toContain('Я запам’ятав(-ла)');
     expect(compiled.querySelector('.slider-button-label')?.textContent).toContain('Назад');
     expect(compiled.querySelectorAll('.slider-button-label')[1]?.textContent).toContain('Далі');
 
@@ -77,6 +86,45 @@ describe('LearningPageComponent', () => {
     fixture.detectChanges();
     expect(compiled.querySelector('.translation-label')?.textContent).toBe('Українською');
     expect(compiled.querySelector('.translation-reveal .word-hint')?.textContent).toContain('квартира');
+  });
+
+  it('loads the learning-card photo with the English word', fakeAsync(() => {
+    const imageService = TestBed.inject(PixabayImageService);
+    const findImage = spyOn(imageService, 'findImage').and.returnValue(of(null));
+    const fixture = TestBed.createComponent(LearningPageComponent);
+    fixture.detectChanges();
+    tick(0);
+    fixture.detectChanges();
+
+    expect(findImage).toHaveBeenCalledWith(vocabulary[0].translationEnglish);
+    expect((fixture.nativeElement as HTMLElement).querySelector('.word-photo')?.textContent)
+      .toContain(vocabulary[0].translationEnglish);
+    fixture.destroy();
+  }));
+
+  it('paginates the vocabulary and applies the selected page size', () => {
+    const fixture = TestBed.createComponent(LearningPageComponent);
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    expect(compiled.querySelectorAll('.word-grid app-vocabulary-card').length).toBe(10);
+    (compiled.querySelector('[aria-label="Сторінка 2"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(compiled.querySelector('.word-grid h4')?.textContent?.trim()).toBe(
+      fixture.componentInstance.displayWord(vocabulary[10]),
+    );
+
+    const pageSize = compiled.querySelector('.page-size-control select') as HTMLSelectElement;
+    pageSize.value = '20';
+    pageSize.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    expect(compiled.querySelectorAll('.word-grid app-vocabulary-card').length).toBe(20);
+    expect(compiled.querySelector('.word-range')?.textContent).toContain('1–20');
+
+    fixture.componentInstance.setWordPage(4);
+    fixture.componentInstance.selectWordCategory(fixture.componentInstance.categories[1]);
+    expect(fixture.componentInstance.wordPage).toBe(1);
+    fixture.destroy();
   });
 
   it('persists and restores study language and theme settings', fakeAsync(() => {
@@ -258,20 +306,42 @@ describe('LearningPageComponent', () => {
 
   it('navigates the language diary by month and does not select future dates', () => {
     const app = TestBed.createComponent(LearningPageComponent).componentInstance;
-    app.calendarMonth = new Date(2026, 9, 1);
+    const now = new Date();
+    const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const todayKey = [
+      now.getFullYear(),
+      String(now.getMonth() + 1).padStart(2, '0'),
+      String(now.getDate()).padStart(2, '0'),
+    ].join('-');
+    app.calendarMonth = currentMonth;
+    app.selectedDateKey = todayKey;
+
     app.changeCalendarMonth(-1);
-    expect(app.calendarMonth).toEqual(new Date(2026, 8, 1));
-    expect(app.selectedDateKey).toBe('2026-09-01');
+    const previousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const previousMonthKey = [
+      previousMonth.getFullYear(),
+      String(previousMonth.getMonth() + 1).padStart(2, '0'),
+      '01',
+    ].join('-');
+    expect(app.calendarMonth).toEqual(previousMonth);
+    expect(app.selectedDateKey).toBe(previousMonthKey);
 
     app.changeCalendarMonth(1);
-    expect(app.calendarMonth).toEqual(new Date(2026, 9, 1));
-    expect(app.selectedDateKey).toBe('2026-10-01');
+    expect(app.calendarMonth).toEqual(currentMonth);
+    const currentMonthKey = [
+      currentMonth.getFullYear(),
+      String(currentMonth.getMonth() + 1).padStart(2, '0'),
+      '01',
+    ].join('-');
+    expect(app.selectedDateKey).toBe(currentMonthKey);
     expect(app.canGoToNextCalendarMonth).toBeFalse();
 
+    app.calendarMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    app.selectedDateKey = todayKey;
     const futureDay = app.calendarDays.find((day) => day?.isFuture);
     expect(futureDay).toBeDefined();
     app.selectCalendarDay(futureDay!);
-    expect(app.selectedDateKey).toBe('2026-10-01');
+    expect(app.selectedDateKey).toBe(todayKey);
   });
 
   it('moves through vocabulary cards in both directions', () => {

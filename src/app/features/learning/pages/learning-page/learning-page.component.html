@@ -174,6 +174,30 @@
           </div>
           <div class="word-slider" (touchstart)="onWordTouchStart($event)" (touchend)="onWordTouchEnd($event)">
             <div #wordSlide class="word-slide">
+              <div class="word-photo" [class.has-photo]="currentWordImage">
+                <img
+                  *ngIf="currentWordImage"
+                  [src]="currentWordImage.url"
+                  [alt]="currentWord.translationEnglish + ' — ' + currentWord.translation"
+                  loading="eager"
+                  decoding="async"
+                  (error)="onCurrentWordImageError()"
+                />
+                <a
+                  *ngIf="currentWordImage"
+                  class="word-photo-source"
+                  [href]="currentWordImage.pageUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Джерело фото — Pixabay"
+                >Pixabay</a>
+                <div *ngIf="!currentWordImage" class="word-photo-placeholder" role="img" [attr.aria-label]="currentWord.translationEnglish">
+                  <span aria-hidden="true">✦</span>
+                  <strong>{{ currentWord.translationEnglish }}</strong>
+                  <small *ngIf="imageLoadFailed">Фото для цього слова тимчасово недоступне</small>
+                  <small *ngIf="!imageLoadFailed">Завантажуємо фото…</small>
+                </div>
+              </div>
               <div class="daily-word">
                 <span class="word-category">{{ currentWord.category }}</span>
                 <h3 [attr.lang]="learningLanguage">{{ displayWord(currentWord) }}</h3>
@@ -194,10 +218,8 @@
           </div>
           <div class="daily-actions">
             <button *ngIf="!showAnswer" class="outline-button" type="button" (click)="toggleAnswer()">Показати переклад <span>⌄</span></button>
-            <ng-container *ngIf="showAnswer">
-              <button class="outline-button" type="button" (click)="toggleAnswer()">Повторити пізніше</button>
-              <button class="primary-button" type="button" (click)="markLearned(currentWord)">Я запам’ятав(-ла) <span>✓</span></button>
-            </ng-container>
+            <button *ngIf="showAnswer" class="outline-button" type="button" (click)="toggleAnswer()">Повторити пізніше</button>
+            <button class="primary-button" type="button" (click)="markLearned(currentWord)">Я запам’ятав(-ла) <span>✓</span></button>
             <span class="encouragement-mini">У тебе все вийде! <span>✦</span></span>
           </div>
           <div class="slider-controls" aria-label="Перемикання карток">
@@ -219,17 +241,17 @@
           <div><h3>Словник {{ learningLanguageName }}</h3><p>Обирай слова, які хочеш повторити</p></div>
           <label class="search-box">
             <span aria-hidden="true">⌕</span>
-            <input type="search" [(ngModel)]="searchQuery" placeholder="Знайти слово…" [attr.aria-label]="'Пошук слів ' + learningLanguageName" />
+            <input type="search" [(ngModel)]="searchQuery" (ngModelChange)="onWordSearchChange()" placeholder="Знайти слово…" [attr.aria-label]="'Пошук слів ' + learningLanguageName" />
           </label>
         </div>
         <div class="category-list" aria-label="Категорії слів">
-          <button *ngFor="let category of categories" type="button" [class.selected]="activeCategory === category" (click)="activeCategory = category">
+          <button *ngFor="let category of categories" type="button" [class.selected]="activeCategory === category" (click)="selectWordCategory(category)">
             {{ category }}
           </button>
         </div>
         <div class="word-grid">
           <app-vocabulary-card
-            *ngFor="let word of visibleWords"
+            *ngFor="let word of paginatedWords"
             [word]="word"
             [language]="learningLanguage"
             [displayWord]="displayWord(word)"
@@ -240,6 +262,31 @@
           </app-vocabulary-card>
         </div>
         <p class="empty-state" *ngIf="visibleWords.length === 0">Нічого не знайдено. Зміни запит або категорію.</p>
+        <div class="word-pagination-toolbar" *ngIf="visibleWords.length > 0">
+          <label class="page-size-control">
+            <span>Слів на сторінці</span>
+            <select [value]="wordPageSize" (change)="onWordPageSizeChange($event)" aria-label="Кількість слів на сторінці">
+              <option value="10">10</option>
+              <option value="20">20</option>
+            </select>
+          </label>
+          <span class="word-range" aria-live="polite">
+            {{ firstVisibleWordNumber }}–{{ lastVisibleWordNumber }} з {{ visibleWords.length }} слів
+          </span>
+        </div>
+        <nav class="word-pagination" *ngIf="wordPageCount > 1" aria-label="Сторінки словника">
+          <button type="button" class="page-navigation" (click)="setWordPage(wordPage - 1)" [disabled]="wordPage === 1" aria-label="Попередня сторінка">← <span>Назад</span></button>
+          <button
+            *ngFor="let page of visiblePageNumbers"
+            type="button"
+            [class.current-page]="wordPage === page"
+            [attr.aria-current]="wordPage === page ? 'page' : null"
+            [attr.aria-label]="'Сторінка ' + page"
+            (click)="setWordPage(page)">
+            {{ page }}
+          </button>
+          <button type="button" class="page-navigation" (click)="setWordPage(wordPage + 1)" [disabled]="wordPage === wordPageCount" aria-label="Наступна сторінка"><span>Далі</span> →</button>
+        </nav>
       </ng-container>
 
       <ng-container *ngIf="activeTab === 'phrases'">

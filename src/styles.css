@@ -679,6 +679,83 @@ summary:focus-visible {
   line-height: 1.5;
 }
 
+.app-shell .word-pagination-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  color: #7d887f;
+  font-size: 11px;
+}
+
+.app-shell .page-size-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.app-shell .page-size-control select {
+  min-width: 62px;
+  min-height: 38px;
+  border: 1px solid #e1e7dc;
+  border-radius: 8px;
+  padding: 0 9px;
+  background: #fff;
+  color: #20342d;
+  font: inherit;
+}
+
+.app-shell .word-range {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.app-shell .word-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 12px 0 4px;
+}
+
+.app-shell .word-pagination button {
+  min-width: 40px;
+  min-height: 40px;
+  border: 1px solid #e1e7dc;
+  border-radius: 9px;
+  padding: 0 9px;
+  background: #fff;
+  color: #607064;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.app-shell .word-pagination button:hover:not(:disabled) {
+  border-color: #b7c9ae;
+  background: #f5f8ef;
+}
+
+.app-shell .word-pagination button.current-page {
+  border-color: #326f55;
+  background: #326f55;
+  color: #fff;
+  font-weight: 700;
+}
+
+.app-shell .word-pagination button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.app-shell .word-pagination .page-navigation {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
 .app-shell .english-context-note {
   min-height: auto !important;
   color: #748172;
@@ -830,6 +907,45 @@ summary:focus-visible {
     width: 100%;
   }
 
+  .app-shell .word-pagination-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .app-shell .page-size-control {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .app-shell .page-size-control select {
+    min-width: 76px;
+    min-height: 44px;
+  }
+
+  .app-shell .word-range {
+    text-align: left;
+  }
+
+  .app-shell .word-pagination {
+    gap: 4px;
+    margin-top: 12px;
+  }
+
+  .app-shell .word-pagination button {
+    min-width: 42px;
+    min-height: 44px;
+    padding-inline: 8px;
+  }
+
+  .app-shell .word-pagination .page-navigation {
+    min-width: 44px;
+  }
+
+  .app-shell .word-pagination .page-navigation span {
+    display: none;
+  }
+
   .app-shell .slider-controls {
     display: grid;
     grid-template-columns: auto minmax(35px, 1fr) auto auto;
@@ -913,6 +1029,8 @@ summary:focus-visible {
 .app-shell.theme-dark .reading-card,
 .app-shell.theme-dark .reading-toggle,
 .app-shell.theme-dark .search-box,
+.app-shell.theme-dark .page-size-control select,
+.app-shell.theme-dark .word-pagination button,
 .app-shell.theme-dark .category-list button,
 .app-shell.theme-dark .favorite-button,
 .app-shell.theme-dark .slider-controls > button,
@@ -923,6 +1041,20 @@ summary:focus-visible {
   border-color: #36443a;
   background-color: #202a23;
   color: #e3ebe3;
+}
+
+.app-shell.theme-dark .word-pagination button.current-page {
+  border-color: #8bc698;
+  background: #8bc698;
+  color: #15241a;
+}
+
+.app-shell.theme-dark .word-pagination button:disabled {
+  opacity: 0.4;
+}
+
+.app-shell.theme-dark .word-pagination-toolbar {
+  color: #aab8ad;
 }
 
 .app-shell.theme-dark .daily-card {

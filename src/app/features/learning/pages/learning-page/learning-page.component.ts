@@ -1,7 +1,9 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Component, ElementRef, Inject, OnInit, PLATFORM_ID, ViewChild } from '@angular/core';
+import { Component, ElementRef, Inject, OnDestroy, OnInit, PLATFORM_ID, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import type { Phrase, ReadingText, WordCard } from '../../../../core/models/vocabulary.model';
+import { PixabayImageService, type VocabularyImage } from '../../../../core/services/pixabay-image.service';
 import { phrases, readingTexts, vocabulary } from '../../data/vocabulary';
 import { VocabularyCardComponent } from '../../../../shared/components/vocabulary-card/vocabulary-card.component';
 
@@ -20,6 +22,7 @@ interface SavedSettings {
 }
 
 type LearningTab = 'words' | 'phrases' | 'texts';
+type WordPageSize = 10 | 20;
 
 interface CalendarDay {
   key: string;
@@ -38,7 +41,7 @@ interface CalendarDay {
   templateUrl: './learning-page.component.html',
   styleUrl: './learning-page.component.css',
 })
-export class LearningPageComponent implements OnInit {
+export class LearningPageComponent implements OnDestroy, OnInit {
   @ViewChild('wordSlide') private wordSlide?: ElementRef<HTMLElement>;
 
   readonly words = vocabulary;
@@ -60,12 +63,16 @@ export class LearningPageComponent implements OnInit {
   theme: AppTheme = 'light';
   activeCategory = 'Усі слова';
   searchQuery = '';
+  wordPageSize: WordPageSize = 10;
+  wordPage = 1;
   learned = new Set<string>();
   favorites = new Set<string>();
   dailyProgress: Record<string, string[]> = {};
   calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
   selectedDateKey = this.dateKey(new Date());
   currentWord = vocabulary[0];
+  currentWordImage: VocabularyImage | null = null;
+  imageLoadFailed = false;
   showAnswer = false;
   feedback = '';
   storageMessage = '';
@@ -75,16 +82,25 @@ export class LearningPageComponent implements OnInit {
   private isBrowser = false;
   private touchStartX: number | null = null;
   private wordCardAnimation?: Animation;
+  private imageRequest?: Subscription;
 
-  constructor(@Inject(PLATFORM_ID) private readonly platformId: object) {}
+  constructor(
+    @Inject(PLATFORM_ID) private readonly platformId: object,
+    private readonly pixabayImageService: PixabayImageService,
+  ) {}
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       setTimeout(() => {
         this.restoreSettings();
         this.restoreProgress();
+        this.loadCurrentWordImage();
       }, 0);
     }
+  }
+
+  ngOnDestroy(): void {
+    this.imageRequest?.unsubscribe();
   }
 
   private restoreSettings(): void {
@@ -196,10 +212,36 @@ export class LearningPageComponent implements OnInit {
       const matchesQuery =
         !query ||
         this.displayWord(word).toLocaleLowerCase(this.learningLanguage).includes(query) ||
+        word.translationEnglish.toLocaleLowerCase('en').includes(query) ||
         word.translation.toLocaleLowerCase('uk').includes(query) ||
         word.word.toLocaleLowerCase('de').includes(query);
       return matchesCategory && matchesQuery;
     });
+  }
+
+  get paginatedWords(): WordCard[] {
+    const start = (this.wordPage - 1) * this.wordPageSize;
+    return this.visibleWords.slice(start, start + this.wordPageSize);
+  }
+
+  get wordPageCount(): number {
+    return Math.max(1, Math.ceil(this.visibleWords.length / this.wordPageSize));
+  }
+
+  get visiblePageNumbers(): number[] {
+    const windowSize = 3;
+    const halfWindow = Math.floor(windowSize / 2);
+    const start = Math.max(1, Math.min(this.wordPage - halfWindow, this.wordPageCount - windowSize + 1));
+    const end = Math.min(this.wordPageCount, start + windowSize - 1);
+    return Array.from({ length: end - start + 1 }, (_, index) => start + index);
+  }
+
+  get firstVisibleWordNumber(): number {
+    return this.visibleWords.length === 0 ? 0 : (this.wordPage - 1) * this.wordPageSize + 1;
+  }
+
+  get lastVisibleWordNumber(): number {
+    return Math.min(this.wordPage * this.wordPageSize, this.visibleWords.length);
   }
 
   get learnedCount(): number {
@@ -350,11 +392,13 @@ export class LearningPageComponent implements OnInit {
     if (this.learningLanguage === language) return;
     this.learningLanguage = language;
     this.activeTab = 'words';
+    this.wordPage = 1;
     this.showAnswer = false;
     this.feedback = '';
     this.storageMessage = '';
     this.saveSettings();
     this.restoreProgress();
+    this.loadCurrentWordImage();
   }
 
   toggleTheme(): void {
@@ -365,6 +409,29 @@ export class LearningPageComponent implements OnInit {
   selectTab(tab: LearningTab): void {
     this.activeTab = tab;
     this.feedback = '';
+  }
+
+  selectWordCategory(category: string): void {
+    this.activeCategory = category;
+    this.wordPage = 1;
+  }
+
+  onWordSearchChange(): void {
+    this.wordPage = 1;
+  }
+
+  setWordPageSize(size: WordPageSize): void {
+    this.wordPageSize = size;
+    this.wordPage = 1;
+  }
+
+  onWordPageSizeChange(event: Event): void {
+    const value = (event.target as HTMLSelectElement).value;
+    this.setWordPageSize(value === '20' ? 20 : 10);
+  }
+
+  setWordPage(page: number): void {
+    this.wordPage = Math.max(1, Math.min(page, this.wordPageCount));
   }
 
   changeCalendarMonth(offset: -1 | 1): void {
@@ -381,6 +448,7 @@ export class LearningPageComponent implements OnInit {
     this.activeTab = 'words';
     this.activeCategory = 'Усі слова';
     this.searchQuery = '';
+    this.wordPage = 1;
 
     const next = this.nextUnlearnedWord();
     if (next) {
@@ -395,6 +463,7 @@ export class LearningPageComponent implements OnInit {
       this.showAnswer = false;
       this.feedback = 'Ти вивчив(-ла) весь словник! Повтори обрані слова або обери іншу мову навчання.';
     }
+    this.loadCurrentWordImage();
 
     if (isPlatformBrowser(this.platformId)) {
       document.getElementById('learning')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -429,7 +498,30 @@ export class LearningPageComponent implements OnInit {
     this.currentWord = this.words[index];
     this.showAnswer = false;
     this.feedback = '';
+    this.loadCurrentWordImage();
     this.animateWordTransition();
+  }
+
+  onCurrentWordImageError(): void {
+    this.currentWordImage = null;
+    this.imageLoadFailed = true;
+  }
+
+  private loadCurrentWordImage(): void {
+    this.imageRequest?.unsubscribe();
+    this.currentWordImage = null;
+    this.imageLoadFailed = false;
+    if (!this.isBrowser) return;
+
+    this.imageRequest = this.pixabayImageService.findImage(this.currentWord.translationEnglish).subscribe({
+      next: (image) => {
+        this.currentWordImage = image;
+        this.imageLoadFailed = image === null;
+      },
+      error: () => {
+        this.imageLoadFailed = true;
+      },
+    });
   }
 
   private animateWordTransition(): void {
@@ -470,6 +562,7 @@ export class LearningPageComponent implements OnInit {
       this.wordIndex = (this.wordIndex + 1) % this.words.length;
       this.currentWord = this.words[this.wordIndex];
       this.showAnswer = false;
+      this.loadCurrentWordImage();
       if (this.nextWord) this.animateWordTransition();
     }
     this.feedback = this.encouragement;

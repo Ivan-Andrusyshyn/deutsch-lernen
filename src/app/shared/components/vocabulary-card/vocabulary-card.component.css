@@ -7,9 +7,10 @@
   min-width: 0;
   height: 100%;
   box-sizing: border-box;
+  overflow: hidden;
   border: 1px solid #edeee9;
   border-radius: 10px;
-  padding: 14px;
+  padding: 0 14px 14px;
   background: #fff;
   transition: border-color 150ms ease, transform 150ms ease, box-shadow 150ms ease;
 }
@@ -18,6 +19,67 @@
   transform: translateY(-2px);
   border-color: #d7e4ce;
   box-shadow: 0 7px 18px #3149360a;
+}
+
+.vocab-image {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  display: grid;
+  margin: 0 -14px 12px;
+  place-items: center;
+  overflow: hidden;
+  border-bottom: 1px solid #e8eee1;
+  background: linear-gradient(135deg, #f3f5e9, #e6eee0);
+}
+
+.vocab-image img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.vocab-image-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  background: linear-gradient(135deg, #f3f5e9, #e6eee0);
+  color: #78866e;
+}
+
+.vocab-image-fallback small {
+  font-size: 9px;
+}
+
+.vocab-image span {
+  font-size: 58px;
+  line-height: 1;
+  filter: drop-shadow(0 5px 5px rgb(34 55 38 / 12%));
+  transition: transform 180ms ease;
+}
+
+.vocab-card:hover .vocab-image span {
+  transform: scale(1.08);
+}
+
+.photo-source {
+  position: absolute;
+  right: 7px;
+  bottom: 7px;
+  border-radius: 4px;
+  padding: 3px 6px;
+  background: rgb(25 35 28 / 72%);
+  color: white;
+  font-size: 9px;
+  text-decoration: none;
+}
+
+.photo-source:hover {
+  background: rgb(25 35 28 / 90%);
 }
 
 .vocab-card-top {
@@ -143,6 +205,25 @@
 
 @media (max-width: 520px) {
   .vocab-card {
-    padding: 13px;
+    padding: 0 13px 13px;
   }
+
+  .vocab-image {
+    margin-inline: -13px;
+    margin-bottom: 11px;
+    aspect-ratio: 3 / 2;
+  }
+
+  .vocab-image span {
+    font-size: 68px;
+  }
+}
+
+:host-context(.theme-dark) .vocab-image {
+  background: linear-gradient(135deg, #35463a, #2a3931);
+}
+
+:host-context(.theme-dark) .vocab-image-fallback {
+  background: linear-gradient(135deg, #35463a, #2a3931);
+  color: #c4d2bd;
 }

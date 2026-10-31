@@ -10,6 +10,70 @@
   color: var(--ink);
 }
 
+.word-photo {
+  position: relative;
+  width: min(100%, 560px);
+  aspect-ratio: 16 / 7;
+  display: grid;
+  overflow: hidden;
+  margin: 20px auto 0;
+  place-items: center;
+  border: 1px solid #e4eadc;
+  border-radius: 15px;
+  background: linear-gradient(135deg, #f3f5e9, #e6eee0);
+}
+
+.word-photo img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.word-photo-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 12px;
+  color: #78866e;
+  text-align: center;
+}
+
+.word-photo-placeholder span {
+  color: #8da77e;
+  font-size: 30px;
+}
+
+.word-photo-placeholder strong {
+  font-family: Georgia, serif;
+  font-size: clamp(17px, 3vw, 25px);
+  font-weight: 400;
+}
+
+.word-photo-placeholder small {
+  font-size: 10px;
+}
+
+.word-photo-source {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  border-radius: 5px;
+  padding: 4px 7px;
+  background: rgb(25 35 28 / 72%);
+  color: #fff;
+  font-size: 10px;
+  text-decoration: none;
+}
+
+.word-photo-source:hover {
+  background: rgb(25 35 28 / 90%);
+}
+
 .app-shell {
   overflow: hidden;
   background: var(--paper);
@@ -1201,6 +1265,10 @@ main,
     padding: 24px 24px 20px;
   }
 
+  .word-photo {
+    aspect-ratio: 16 / 9;
+  }
+
   .daily-word {
     min-height: 165px;
   }
@@ -1360,6 +1428,13 @@ main,
     margin-top: 15px;
     border-radius: 17px;
     padding: 18px 16px 16px;
+  }
+
+  .word-photo {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    margin-top: 13px;
+    border-radius: 12px;
   }
 
   .daily-card-top {
