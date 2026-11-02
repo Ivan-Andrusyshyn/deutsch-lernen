@@ -35,7 +35,7 @@ main,
   align-items: center;
   gap: 9px;
   color: var(--ink);
-  font-family: 'DM Sans', sans-serif;
+  font-family: "DM Sans", sans-serif;
   font-size: 19px;
   font-weight: 700;
   letter-spacing: -0.8px;
@@ -117,7 +117,7 @@ main,
 
 .hero h1 {
   margin: 17px 0 13px;
-  font-family: 'DM Sans', sans-serif;
+  font-family: "DM Sans", sans-serif;
   font-size: clamp(42px, 5.4vw, 64px);
   font-weight: 500;
   letter-spacing: -3.7px;
@@ -152,7 +152,10 @@ main,
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
+  transition:
+    transform 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease;
 }
 
 .primary-button {
@@ -239,7 +242,7 @@ main,
 
 .book-label {
   color: #54745a;
-  font-family: 'DM Sans', sans-serif;
+  font-family: "DM Sans", sans-serif;
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 1.7px;
@@ -337,7 +340,7 @@ main,
 .progress-heading h2,
 .section-heading h2 {
   margin: 7px 0 0;
-  font-family: 'DM Sans', sans-serif;
+  font-family: "DM Sans", sans-serif;
   font-size: 20px;
   font-weight: 500;
   letter-spacing: -0.65px;
@@ -391,7 +394,84 @@ main,
   color: #919891;
   font-size: 9px;
 }
+.daily-goal-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+}
 
+.daily-goal-control > span {
+  color: #65716a;
+  white-space: nowrap;
+}
+
+.daily-goal-control select {
+  min-height: 32px;
+  min-width: 72px;
+  appearance: none;
+  border: 1px solid #e9ebdf;
+  border-radius: 999px;
+  padding: 0 28px 0 12px;
+  background: #fbfcf4
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23617254' d='M2.5 4.5L6 8l3.5-3.5' stroke='%23617254' stroke-width='1.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    no-repeat right 10px center;
+  color: #617254;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.daily-goal-control select:hover {
+  border-color: #dce8ce;
+  background-color: #f1f6e9;
+}
+
+.daily-goal-control select:focus {
+  outline: none;
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px #326f5520;
+}
+
+.daily-goal-control select:focus-visible {
+  outline: none;
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px #326f5520;
+}
+
+/* Optional dark-theme support if the page ever toggles it */
+.theme-dark .daily-goal-control {
+  color: #a9b5ab;
+}
+
+.theme-dark .daily-goal-control > span {
+  color: #a9b5ab;
+}
+
+.theme-dark .daily-goal-control select {
+  border-color: #526553;
+  background-color: #2a352c;
+  color: #d0dbd1;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23a9d5a5' d='M2.5 4.5L6 8l3.5-3.5' stroke='%23a9d5a5' stroke-width='1.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+.theme-dark .daily-goal-control select:hover {
+  border-color: #6b8a6e;
+  background-color: #334038;
+}
+
+.theme-dark .daily-goal-control select:focus,
+.theme-dark .daily-goal-control select:focus-visible {
+  border-color: #8bc698;
+  box-shadow: 0 0 0 3px rgb(139 198 152 / 22%);
+}
 .progress-foot strong {
   color: var(--ink);
 }
@@ -507,7 +587,7 @@ main,
   left: 12px;
   height: 2px;
   background: var(--green);
-  content: '';
+  content: "";
 }
 
 .tab-count {
@@ -588,7 +668,7 @@ main,
 .library-heading h3,
 .content-intro h3 {
   margin: 0;
-  font-family: 'DM Sans', sans-serif;
+  font-family: "DM Sans", sans-serif;
   font-size: 17px;
   font-weight: 500;
   letter-spacing: -0.3px;
@@ -673,7 +753,10 @@ main,
   border-radius: 10px;
   padding: 14px;
   background: #fff;
-  transition: border-color 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+  transition:
+    border-color 150ms ease,
+    transform 150ms ease,
+    box-shadow 150ms ease;
 }
 
 .phrase-card:hover {
@@ -1094,25 +1177,50 @@ main,
 }
 
 @keyframes goal-backdrop-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes goal-card-in {
-  from { opacity: 0; transform: scale(0.92) translateY(12px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 @keyframes bear-cheer {
-  0%, 100% { transform: translateY(0) rotate(0); }
-  25% { transform: translateY(-7px) rotate(-5deg); }
-  55% { transform: translateY(0) rotate(4deg); }
-  75% { transform: translateY(-4px) rotate(-3deg); }
+  0%,
+  100% {
+    transform: translateY(0) rotate(0);
+  }
+  25% {
+    transform: translateY(-7px) rotate(-5deg);
+  }
+  55% {
+    transform: translateY(0) rotate(4deg);
+  }
+  75% {
+    transform: translateY(-4px) rotate(-3deg);
+  }
 }
 
 @keyframes sparkle-pop {
-  from { opacity: 0.55; transform: scale(0.8) rotate(-12deg); }
-  to { opacity: 1; transform: scale(1.15) rotate(12deg); }
+  from {
+    opacity: 0.55;
+    transform: scale(0.8) rotate(-12deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1.15) rotate(12deg);
+  }
 }
 
 @media (max-width: 760px) {
