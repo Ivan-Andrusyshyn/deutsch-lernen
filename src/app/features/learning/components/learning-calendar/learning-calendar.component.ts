@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import type { WordCard } from '../../../../core/models/vocabulary.model';
 import { LearningCalendarService, type CalendarDay } from '../../services/learning-calendar.service';
 
@@ -8,6 +8,7 @@ import { LearningCalendarService, type CalendarDay } from '../../services/learni
   standalone: true,
   imports: [CommonModule],
   templateUrl: './learning-calendar.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LearningCalendarComponent {
   @Input({ required: true }) dailyProgress: Record<string, string[]> = {};

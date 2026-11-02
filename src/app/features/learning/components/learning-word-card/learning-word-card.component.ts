@@ -1,8 +1,10 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
+  ChangeDetectionStrategy,
   Component,
   ElementRef,
   EventEmitter,
+  HostListener,
   Inject,
   Input,
   OnChanges,
@@ -12,7 +14,6 @@ import {
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
-import { Subscription } from 'rxjs';
 import type { WordCard } from '../../../../core/models/vocabulary.model';
 
 @Component({
@@ -21,6 +22,7 @@ import type { WordCard } from '../../../../core/models/vocabulary.model';
   imports: [CommonModule],
   templateUrl: './learning-word-card.component.html',
   styleUrl: './learning-word-card.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LearningWordCardComponent implements OnChanges, OnDestroy {
   @Input({ required: true }) word!: WordCard;
@@ -35,8 +37,6 @@ export class LearningWordCardComponent implements OnChanges, OnDestroy {
   @Output() next = new EventEmitter<void>();
 
   @ViewChild('wordSlide') private wordSlide?: ElementRef<HTMLElement>;
-  imageLoadFailed = false;
-  private imageRequest?: Subscription;
   private cardAnimation?: Animation;
   private touchStartX: number | null = null;
 
@@ -48,14 +48,11 @@ export class LearningWordCardComponent implements OnChanges, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.imageRequest?.unsubscribe();
     this.cardAnimation?.cancel();
   }
 
   displayWord(): string {
-    return this.language === 'de'
-      ? this.word.word
-      : this.word.translationEnglish;
+    return this.language === 'de' ? this.word.word : this.word.translationEnglish;
   }
 
   onTouchStart(event: TouchEvent): void {
@@ -72,8 +69,16 @@ export class LearningWordCardComponent implements OnChanges, OnDestroy {
     else this.previous.emit();
   }
 
-  onImageError(): void {
-    this.imageLoadFailed = true;
+  @HostListener('keydown', ['$event'])
+  onKeydown(event: KeyboardEvent): void {
+    if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      this.previous.emit();
+    }
+    if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      this.next.emit();
+    }
   }
 
   private animateCard(): void {

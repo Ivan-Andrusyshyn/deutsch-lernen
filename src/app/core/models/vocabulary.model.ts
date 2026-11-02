@@ -1,4 +1,7 @@
 export type WordKind = 'noun' | 'verb' | 'adjective';
+export type LearningLanguage = 'de' | 'en';
+export type AppTheme = 'light' | 'dark';
+export type DailyGoal = 3 | 5 | 10 | 15;
 
 export interface WordCard {
   id: string;
@@ -12,7 +15,7 @@ export interface WordCard {
 }
 
 export interface Phrase {
-  german: string;
+  text: string;
   translation: string;
   example: string;
 }
@@ -20,7 +23,7 @@ export interface Phrase {
 export interface ReadingText {
   title: string;
   level: string;
-  german: string;
+  body: string;
   translation: string;
   questions: Array<{ question: string; answer: string }>;
 }

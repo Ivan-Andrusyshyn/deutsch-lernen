@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 
 export type WordPageSize = 10 | 20;
 
@@ -8,6 +8,7 @@ export type WordPageSize = 10 | 20;
   standalone: true,
   imports: [CommonModule],
   templateUrl: './word-pagination.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WordPaginationComponent {
   @Input({ required: true }) totalItems = 0;

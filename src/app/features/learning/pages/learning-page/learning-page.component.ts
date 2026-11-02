@@ -1,7 +1,18 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
+import {
+  Component,
+  Inject,
+  PLATFORM_ID,
+  afterNextRender,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import type {
+  AppTheme,
+  DailyGoal,
+  LearningLanguage,
   Phrase,
   ReadingText,
   WordCard,
@@ -12,25 +23,15 @@ import {
   type WordPageSize,
 } from '../../components/word-pagination/word-pagination.component';
 import { LearningCalendarService } from '../../services/learning-calendar.service';
-import { phrases, readingTexts, vocabulary } from '../../data/vocabulary';
+import { LearningProgressService } from '../../services/learning-progress.service';
+import { LearningSettingsService } from '../../services/learning-settings.service';
+import { phrasesFor, readingTextsFor } from '../../data/learning-materials';
+import { vocabulary } from '../../data/vocabulary';
 import { VocabularyCardComponent } from '../../../../shared/components/vocabulary-card/vocabulary-card.component';
 import { LearningWordCardComponent } from '../../components/learning-word-card/learning-word-card.component';
 
-interface SavedProgress {
-  learned: string[];
-  favorites: string[];
-  dailyProgress: Record<string, string[]>;
-}
-
-type LearningLanguage = 'de' | 'en';
-type AppTheme = 'light' | 'dark';
-
-interface SavedSettings {
-  learningLanguage: LearningLanguage;
-  theme: AppTheme;
-}
-
 type LearningTab = 'words' | 'phrases' | 'texts';
+
 @Component({
   selector: 'app-learning-page',
   standalone: true,
@@ -45,13 +46,12 @@ type LearningTab = 'words' | 'phrases' | 'texts';
   templateUrl: './learning-page.component.html',
   styleUrl: './learning-page.component.css',
 })
-export class LearningPageComponent implements OnInit {
+export class LearningPageComponent {
   readonly words = vocabulary;
-  readonly phrases = phrases;
-  readonly readingTexts = readingTexts;
-  readonly dailyGoal = 5;
+  readonly favoritesFilter = 'Обране';
   readonly categories = [
     'Усі слова',
+    this.favoritesFilter,
     ...new Set(vocabulary.map((word) => word.category)),
   ];
   readonly encouragements = [
@@ -62,220 +62,202 @@ export class LearningPageComponent implements OnInit {
     'Молодець! Ще одне слово тепер твоє.',
   ];
 
-  activeTab: LearningTab = 'words';
-  learningLanguage: LearningLanguage = 'de';
-  theme: AppTheme = 'light';
-  activeCategory = 'Усі слова';
-  searchQuery = '';
-  wordPageSize: WordPageSize = 10;
-  wordPage = 1;
-  learned = new Set<string>();
-  favorites = new Set<string>();
-  dailyProgress: Record<string, string[]> = {};
-  currentWord = vocabulary[0];
-  showAnswer = false;
-  feedback = '';
-  storageMessage = '';
-  showDailyGoalCelebration = false;
-  openText = -1;
-  wordIndex = 0;
-  private isBrowser = false;
-  constructor(
-    @Inject(PLATFORM_ID) private readonly platformId: object,
-    private readonly calendarService: LearningCalendarService,
-  ) {}
+  readonly settings = inject(LearningSettingsService);
+  readonly progress = inject(LearningProgressService);
+  private readonly calendarService = inject(LearningCalendarService);
+  private readonly wordIds = new Set(vocabulary.map((word) => word.id));
 
-  ngOnInit(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      setTimeout(() => {
-        this.restoreSettings();
-        this.restoreProgress();
-      }, 0);
-    }
-  }
+  private readonly activeTabSignal = signal<LearningTab>('words');
+  private readonly activeCategorySignal = signal('Усі слова');
+  private readonly searchQuerySignal = signal('');
+  private readonly wordPageSizeSignal = signal<WordPageSize>(10);
+  private readonly wordPageSignal = signal(1);
+  private readonly showAnswerSignal = signal(false);
+  private readonly feedbackSignal = signal('');
+  private readonly openTextSignal = signal(-1);
+  private readonly wordIndexSignal = signal(0);
+  private readonly currentWordSignal = signal<WordCard>(vocabulary[0]);
 
-  private restoreSettings(): void {
-    let saved: string | null;
-    try {
-      saved = window.localStorage.getItem('wortzeit-settings-v1');
-      if (!saved) {
-        const legacySettings = window.localStorage.getItem(
-          'deutsch-kompass-settings-v1',
-        );
-        if (legacySettings) {
-          const parsed: unknown = JSON.parse(legacySettings);
-          if (parsed && typeof parsed === 'object') {
-            const previousSettings = parsed as {
-              translationLanguage?: unknown;
-              theme?: unknown;
-            };
-            this.learningLanguage =
-              previousSettings.translationLanguage === 'en' ? 'en' : 'de';
-            if (
-              previousSettings.theme === 'light' ||
-              previousSettings.theme === 'dark'
-            ) {
-              this.theme = previousSettings.theme;
-            }
-            this.saveSettings();
-          }
-        }
-      }
-    } catch (error) {
-      if (error instanceof DOMException) {
-        this.storageMessage =
-          'Браузер не дозволив доступ до збережених налаштувань.';
-        return;
-      }
-      if (error instanceof SyntaxError) {
-        this.storageMessage =
-          'Збережені налаштування пошкоджено. Використано стандартні параметри.';
-        return;
-      }
-      throw error;
-    }
-    if (!saved) return;
+  private readonly visibleWordsList = computed(() => {
+    const query = this.searchQuerySignal().trim().toLocaleLowerCase('uk');
+    const category = this.activeCategorySignal();
+    const language = this.settings.language();
+    const favorites = this.progress.favorites();
 
-    try {
-      const settings: unknown = JSON.parse(saved);
-      if (!this.isSavedSettings(settings)) {
-        this.storageMessage =
-          'Не вдалося прочитати збережені налаштування. Використано стандартні параметри.';
-        return;
-      }
-      this.learningLanguage = settings.learningLanguage;
-      this.theme = settings.theme;
-    } catch (error) {
-      if (error instanceof SyntaxError) {
-        this.storageMessage =
-          'Збережені налаштування пошкоджено. Використано стандартні параметри.';
-        return;
-      }
-      throw error;
-    }
-  }
-
-  private restoreProgress(): void {
-    this.isBrowser = isPlatformBrowser(this.platformId);
-    if (!this.isBrowser) return;
-
-    this.learned = new Set<string>();
-    this.favorites = new Set<string>();
-    this.dailyProgress = {};
-    this.showDailyGoalCelebration = false;
-    this.currentWord = this.words[0];
-    this.wordIndex = 0;
-
-    let saved: string | null;
-    try {
-      saved = window.localStorage.getItem(this.progressStorageKey);
-      if (!saved && this.learningLanguage === 'de') {
-        saved = window.localStorage.getItem('deutsch-kompass-progress-v1');
-      }
-    } catch (error) {
-      if (error instanceof DOMException) {
-        this.storageMessage = 'Браузер не дозволив доступ до збережених даних.';
-        return;
-      }
-      throw error;
-    }
-    if (!saved) return;
-
-    try {
-      const progress: unknown = JSON.parse(saved);
-      if (!this.isSavedProgress(progress)) {
-        this.storageMessage =
-          'Не вдалося прочитати збережений прогрес. Спробуй почати нове заняття.';
-        return;
-      }
-      this.learned = new Set(
-        progress.learned.filter((id) =>
-          this.words.some((word) => word.id === id),
-        ),
-      );
-      this.favorites = new Set(
-        progress.favorites.filter((id) =>
-          this.words.some((word) => word.id === id),
-        ),
-      );
-      this.dailyProgress = Object.fromEntries(
-        Object.entries(progress.dailyProgress).map(([date, ids]) => [
-          date,
-          ids.filter((id) => this.words.some((word) => word.id === id)),
-        ]),
-      );
-      this.currentWord = this.nextUnlearnedWord() ?? this.words[0];
-      this.wordIndex = this.words.indexOf(this.currentWord);
-      if (
-        this.learningLanguage === 'de' &&
-        !window.localStorage.getItem(this.progressStorageKey)
-      ) {
-        this.saveProgress();
-      }
-    } catch (error) {
-      if (error instanceof SyntaxError) {
-        this.storageMessage = 'Збережений прогрес пошкоджено. Дані не змінено.';
-        return;
-      }
-      throw error;
-    }
-  }
-
-  get visibleWords(): WordCard[] {
-    const query = this.searchQuery.trim().toLocaleLowerCase('uk');
     return this.words.filter((word) => {
       const matchesCategory =
-        this.activeCategory === 'Усі слова' ||
-        word.category === this.activeCategory;
+        category === 'Усі слова' ||
+        (category === this.favoritesFilter
+          ? favorites.has(word.id)
+          : word.category === category);
       const matchesQuery =
         !query ||
-        this.displayWord(word)
-          .toLocaleLowerCase(this.learningLanguage)
-          .includes(query) ||
+        this.displayWord(word).toLocaleLowerCase(language).includes(query) ||
         word.translationEnglish.toLocaleLowerCase('en').includes(query) ||
         word.translation.toLocaleLowerCase('uk').includes(query) ||
         word.word.toLocaleLowerCase('de').includes(query);
       return matchesCategory && matchesQuery;
     });
+  });
+
+  readonly paginatedWords = computed(() => {
+    const start = (this.wordPageSignal() - 1) * this.wordPageSizeSignal();
+    return this.visibleWordsList().slice(start, start + this.wordPageSizeSignal());
+  });
+
+  readonly wordPageCount = computed(() =>
+    Math.max(1, Math.ceil(this.visibleWordsList().length / this.wordPageSizeSignal())),
+  );
+
+  constructor(@Inject(PLATFORM_ID) private readonly platformId: object) {
+    afterNextRender(() => {
+      this.settings.restore();
+      this.progress.restore(this.settings.language(), this.wordIds);
+      this.resetCurrentWord();
+    });
   }
 
-  get paginatedWords(): WordCard[] {
-    const start = (this.wordPage - 1) * this.wordPageSize;
-    return this.visibleWords.slice(start, start + this.wordPageSize);
+  get activeTab(): LearningTab {
+    return this.activeTabSignal();
+  }
+  set activeTab(value: LearningTab) {
+    this.activeTabSignal.set(value);
   }
 
-  get wordPageCount(): number {
-    return Math.max(1, Math.ceil(this.visibleWords.length / this.wordPageSize));
+  get learningLanguage(): LearningLanguage {
+    return this.settings.language();
+  }
+
+  get theme(): AppTheme {
+    return this.settings.theme();
+  }
+  set theme(value: AppTheme) {
+    this.settings.theme.set(value);
+    this.settings.applyTheme();
+  }
+
+  get dailyGoal(): DailyGoal {
+    return this.settings.dailyGoal();
+  }
+
+  get activeCategory(): string {
+    return this.activeCategorySignal();
+  }
+  set activeCategory(value: string) {
+    this.activeCategorySignal.set(value);
+  }
+
+  get searchQuery(): string {
+    return this.searchQuerySignal();
+  }
+  set searchQuery(value: string) {
+    this.searchQuerySignal.set(value);
+  }
+
+  get wordPageSize(): WordPageSize {
+    return this.wordPageSizeSignal();
+  }
+
+  get wordPage(): number {
+    return this.wordPageSignal();
+  }
+  set wordPage(value: number) {
+    this.wordPageSignal.set(value);
+  }
+
+  get learned(): Set<string> {
+    return this.progress.learned();
+  }
+  set learned(value: Set<string>) {
+    this.progress.learned.set(value);
+  }
+
+  get favorites(): Set<string> {
+    return this.progress.favorites();
+  }
+
+  get dailyProgress(): Record<string, string[]> {
+    return this.progress.dailyProgress();
+  }
+
+  get currentWord(): WordCard {
+    return this.currentWordSignal();
+  }
+  set currentWord(value: WordCard) {
+    this.currentWordSignal.set(value);
+  }
+
+  get showAnswer(): boolean {
+    return this.showAnswerSignal();
+  }
+  set showAnswer(value: boolean) {
+    this.showAnswerSignal.set(value);
+  }
+
+  get feedback(): string {
+    return this.feedbackSignal();
+  }
+  set feedback(value: string) {
+    this.feedbackSignal.set(value);
+  }
+
+  get storageMessage(): string {
+    return this.settings.storageMessage() || this.progress.storageMessage();
+  }
+
+  get showDailyGoalCelebration(): boolean {
+    return this.progress.showDailyGoalCelebration();
+  }
+
+  get openText(): number {
+    return this.openTextSignal();
+  }
+  set openText(value: number) {
+    this.openTextSignal.set(value);
+  }
+
+  get wordIndex(): number {
+    return this.wordIndexSignal();
+  }
+  set wordIndex(value: number) {
+    this.wordIndexSignal.set(value);
+  }
+
+  get visibleWords(): WordCard[] {
+    return this.visibleWordsList();
+  }
+
+  get phrases(): Phrase[] {
+    return phrasesFor(this.learningLanguage);
+  }
+
+  get readingTexts(): ReadingText[] {
+    return readingTextsFor(this.learningLanguage);
   }
 
   get learnedCount(): number {
-    return this.learned.size;
+    return this.progress.learnedCount();
   }
 
   get progressPercent(): number {
     if (this.learnedCount === 0) return 0;
-    return Math.max(
-      1,
-      Math.round((this.learnedCount / this.words.length) * 100),
-    );
+    return Math.max(1, Math.round((this.learnedCount / this.words.length) * 100));
   }
 
   get todayCount(): number {
-    return this.dailyProgress[this.todayKey]?.length ?? 0;
+    return this.progress.todayCount();
   }
 
   get streak(): number {
-    return this.calendarService.getStreak(this.dailyProgress);
+    return this.progress.streak();
   }
 
   get progressMessage(): string {
     const language = this.learningLanguageName.toLocaleLowerCase('uk');
     if (this.progressPercent === 100)
       return `Усі ${this.words.length} слів ${language} вивчено — це неймовірно!`;
-    if (this.learnedCount === 0)
-      return 'Почни з першого слова — у тебе все вийде!';
-    if (this.todayCount >= this.dailyGoal)
-      return 'Денну ціль виконано. Ти неймовірний(-а)!';
+    if (this.learnedCount === 0) return 'Почни з першого слова — у тебе все вийде!';
+    if (this.todayCount >= this.dailyGoal) return 'Денну ціль виконано. Ти неймовірний(-а)!';
     return `Маленькі кроки щодня — і ${language} стане звичкою.`;
   }
 
@@ -301,40 +283,49 @@ export class LearningPageComponent implements OnInit {
     return word.translation;
   }
 
+  trackWord(_index: number, word: WordCard): string {
+    return word.id;
+  }
+
   setLearningLanguage(language: LearningLanguage): void {
     if (this.learningLanguage === language) return;
-    this.learningLanguage = language;
-    this.activeTab = 'words';
-    this.wordPage = 1;
-    this.showAnswer = false;
-    this.feedback = '';
-    this.storageMessage = '';
-    this.saveSettings();
-    this.restoreProgress();
+    this.settings.setLanguage(language);
+    this.wordPageSignal.set(1);
+    this.showAnswerSignal.set(false);
+    this.feedbackSignal.set('');
+    this.settings.storageMessage.set('');
+    this.progress.restore(language, this.wordIds);
+    this.resetCurrentWord();
   }
 
   toggleTheme(): void {
-    this.theme = this.theme === 'light' ? 'dark' : 'light';
-    this.saveSettings();
+    this.settings.toggleTheme();
+  }
+
+  setDailyGoal(event: Event): void {
+    const value = Number((event.target as HTMLSelectElement).value);
+    if (value === 3 || value === 5 || value === 10 || value === 15) {
+      this.settings.setDailyGoal(value);
+    }
   }
 
   selectTab(tab: LearningTab): void {
-    this.activeTab = tab;
-    this.feedback = '';
+    this.activeTabSignal.set(tab);
+    this.feedbackSignal.set('');
   }
 
   selectWordCategory(category: string): void {
-    this.activeCategory = category;
-    this.wordPage = 1;
+    this.activeCategorySignal.set(category);
+    this.wordPageSignal.set(1);
   }
 
   onWordSearchChange(): void {
-    this.wordPage = 1;
+    this.wordPageSignal.set(1);
   }
 
   setWordPageSize(size: WordPageSize): void {
-    this.wordPageSize = size;
-    this.wordPage = 1;
+    this.wordPageSizeSignal.set(size);
+    this.wordPageSignal.set(1);
   }
 
   onWordPageSizeChange(size: WordPageSize): void {
@@ -342,31 +333,23 @@ export class LearningPageComponent implements OnInit {
   }
 
   setWordPage(page: number): void {
-    const pageCount = Math.max(
-      1,
-      Math.ceil(this.visibleWords.length / this.wordPageSize),
-    );
-    this.wordPage = Math.max(1, Math.min(page, pageCount));
+    this.wordPageSignal.set(Math.max(1, Math.min(page, this.wordPageCount())));
   }
 
   startLearning(): void {
-    this.activeTab = 'words';
-    this.activeCategory = 'Усі слова';
-    this.searchQuery = '';
-    this.wordPage = 1;
+    this.activeTabSignal.set('words');
+    this.activeCategorySignal.set('Усі слова');
+    this.searchQuerySignal.set('');
+    this.wordPageSignal.set(1);
 
     const next = this.nextUnlearnedWord();
     if (next) {
-      this.currentWord = next;
-      this.wordIndex = this.words.indexOf(next);
-      this.showAnswer = false;
-      this.feedback = '';
+      this.setCurrentWord(this.words.indexOf(next));
     } else {
-      this.currentWord = this.words[0];
-      this.wordIndex = 0;
-      this.showAnswer = false;
-      this.feedback =
-        'Ти вивчив(-ла) весь словник! Повтори обрані слова або обери іншу мову навчання.';
+      this.setCurrentWord(0);
+      this.feedbackSignal.set(
+        'Ти вивчив(-ла) весь словник! Повтори обрані слова або обери іншу мову навчання.',
+      );
     }
     if (isPlatformBrowser(this.platformId)) {
       document
@@ -376,61 +359,34 @@ export class LearningPageComponent implements OnInit {
   }
 
   showPreviousWord(): void {
-    this.setCurrentWord(
-      (this.wordIndex - 1 + this.words.length) % this.words.length,
-    );
+    this.setCurrentWord((this.wordIndex - 1 + this.words.length) % this.words.length);
   }
 
   showNextWord(): void {
     this.setCurrentWord((this.wordIndex + 1) % this.words.length);
   }
 
-  private setCurrentWord(index: number): void {
-    this.wordIndex = index;
-    this.currentWord = this.words[index];
-    this.showAnswer = false;
-    this.feedback = '';
-  }
-
   markLearned(word: WordCard): void {
-    // if (this.learned.has(word.id)) {
-    //   this.feedback = 'Це слово вже позначено як вивчене. Чудова робота!';
-    //   return;
-    // }
-
     const isCurrentWord = word.id === this.currentWord.id;
-    const previousTodayCount = this.todayCount;
-    this.learned.add(word.id);
-    const today = this.todayKey;
-    this.dailyProgress[today] = [
-      ...new Set([...(this.dailyProgress[today] ?? []), word.id]),
-    ];
-    if (
-      previousTodayCount < this.dailyGoal &&
-      this.todayCount >= this.dailyGoal
-    ) {
-      this.showDailyGoalCelebration = true;
+    const result = this.progress.markLearned(word.id, this.dailyGoal);
+    if (result === 'already') {
+      this.feedbackSignal.set('Це слово вже позначено як вивчене. Чудова робота!');
+      return;
     }
     if (isCurrentWord) {
-      this.wordIndex = (this.wordIndex + 1) % this.words.length;
-      this.currentWord = this.words[this.wordIndex];
-      this.showAnswer = false;
+      this.setCurrentWord((this.wordIndex + 1) % this.words.length);
     }
-    this.feedback = this.encouragement;
-    this.saveProgress();
+    this.feedbackSignal.set(this.encouragement);
+    this.progress.save(this.learningLanguage);
   }
 
   continueAfterDailyGoal(): void {
-    this.showDailyGoalCelebration = false;
+    this.progress.continueAfterDailyGoal();
   }
 
   toggleFavorite(word: WordCard): void {
-    if (this.favorites.has(word.id)) {
-      this.favorites.delete(word.id);
-    } else {
-      this.favorites.add(word.id);
-    }
-    this.saveProgress();
+    this.progress.toggleFavorite(word.id);
+    this.progress.save(this.learningLanguage);
   }
 
   isFavorite(word: WordCard): boolean {
@@ -442,104 +398,36 @@ export class LearningPageComponent implements OnInit {
   }
 
   toggleAnswer(): void {
-    this.showAnswer = !this.showAnswer;
+    this.showAnswerSignal.update((value) => !value);
   }
 
   toggleText(index: number): void {
-    this.openText = this.openText === index ? -1 : index;
+    this.openTextSignal.set(this.openText === index ? -1 : index);
   }
 
   showPhraseFeedback(phrase: Phrase): void {
-    this.feedback = `Чудово! Повтори вголос: «${phrase.german}»`;
+    this.feedbackSignal.set(`Чудово! Повтори вголос: «${phrase.text}»`);
   }
 
   showTextFeedback(text: ReadingText): void {
-    this.feedback = `Ти прочитав(-ла) текст «${text.title}» — чудовий крок!`;
+    this.feedbackSignal.set(`Ти прочитав(-ла) текст «${text.title}» — чудовий крок!`);
   }
 
-  private get progressStorageKey(): string {
-    return `wortzeit-progress-${this.learningLanguage}-v1`;
+  private setCurrentWord(index: number): void {
+    this.wordIndexSignal.set(index);
+    this.currentWordSignal.set(this.words[index]);
+    this.showAnswerSignal.set(false);
+    this.feedbackSignal.set('');
   }
 
-  private get todayKey(): string {
-    return this.calendarService.dateKey(new Date());
+  private resetCurrentWord(): void {
+    const next = this.nextUnlearnedWord() ?? this.words[0];
+    this.currentWordSignal.set(next);
+    this.wordIndexSignal.set(this.words.indexOf(next));
+    this.showAnswerSignal.set(false);
   }
 
   private nextUnlearnedWord(): WordCard | undefined {
     return this.words.find((word) => !this.learned.has(word.id));
-  }
-
-  private saveProgress(): void {
-    if (!this.isBrowser) return;
-    const progress: SavedProgress = {
-      learned: [...this.learned],
-      favorites: [...this.favorites],
-      dailyProgress: this.dailyProgress,
-    };
-
-    try {
-      window.localStorage.setItem(
-        this.progressStorageKey,
-        JSON.stringify(progress),
-      );
-      this.storageMessage = '';
-    } catch (error) {
-      if (error instanceof DOMException) {
-        this.storageMessage =
-          'Не вдалося зберегти прогрес. Перевір налаштування сховища браузера.';
-        return;
-      }
-      throw error;
-    }
-  }
-
-  private saveSettings(): void {
-    if (!isPlatformBrowser(this.platformId)) return;
-    const settings: SavedSettings = {
-      learningLanguage: this.learningLanguage,
-      theme: this.theme,
-    };
-
-    try {
-      window.localStorage.setItem(
-        'wortzeit-settings-v1',
-        JSON.stringify(settings),
-      );
-      this.storageMessage = '';
-    } catch (error) {
-      if (error instanceof DOMException) {
-        this.storageMessage =
-          'Не вдалося зберегти налаштування. Перевір сховище браузера.';
-        return;
-      }
-      throw error;
-    }
-  }
-
-  private isSavedSettings(value: unknown): value is SavedSettings {
-    if (!value || typeof value !== 'object') return false;
-    const settings = value as Partial<SavedSettings>;
-    return (
-      (settings.learningLanguage === 'de' ||
-        settings.learningLanguage === 'en') &&
-      (settings.theme === 'light' || settings.theme === 'dark')
-    );
-  }
-
-  private isSavedProgress(value: unknown): value is SavedProgress {
-    if (!value || typeof value !== 'object') return false;
-    const progress = value as Partial<SavedProgress>;
-    return (
-      Array.isArray(progress.learned) &&
-      progress.learned.every((id) => typeof id === 'string') &&
-      Array.isArray(progress.favorites) &&
-      progress.favorites.every((id) => typeof id === 'string') &&
-      typeof progress.dailyProgress === 'object' &&
-      progress.dailyProgress !== null &&
-      Object.values(progress.dailyProgress).every(
-        (ids) =>
-          Array.isArray(ids) && ids.every((id) => typeof id === 'string'),
-      )
-    );
   }
 }

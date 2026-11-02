@@ -43,7 +43,7 @@
         <button class="primary-button hero-button" type="button" (click)="startLearning()">
           <span>Почати навчання</span><span aria-hidden="true">→</span>
         </button>
-        <div class="social-proof"><span class="sparkle">✳</span> Навіть 5 слів на день — це вже успіх</div>
+        <div class="social-proof"><span class="sparkle">✳</span> Навіть {{ dailyGoal }} слів на день — це вже успіх</div>
       </div>
       <div class="hero-art" aria-hidden="true">
         <div class="sun-shape"></div>
@@ -76,6 +76,12 @@
       </div>
       <div class="progress-foot">
         <span><strong>{{ learnedCount }}</strong> із {{ words.length }} слів вивчено</span>
+        <label class="daily-goal-control">
+          <span>Мета на день</span>
+          <select [value]="dailyGoal" (change)="setDailyGoal($event)" aria-label="Денна мета слів">
+            <option *ngFor="let goal of settings.dailyGoalOptions" [value]="goal">{{ goal }}</option>
+          </select>
+        </label>
         <span>{{ progressPercent }}%</span>
       </div>
       <div class="stats-row">
@@ -95,14 +101,11 @@
         <span class="total-pill">{{ words.length }} слів · {{ learningLanguageName }}</span>
       </div>
 
-      <nav class="tab-list" aria-label="Обрати матеріал">
-        <button type="button" [class.active]="activeTab === 'words'" (click)="selectTab('words')"><span>✦</span> Слова <span class="tab-count">{{ words.length }}</span></button>
-        <button *ngIf="learningLanguage === 'de'" type="button" [class.active]="activeTab === 'phrases'" (click)="selectTab('phrases')"><span>〝</span> Фрази <span class="tab-count">{{ phrases.length }}</span></button>
-        <button *ngIf="learningLanguage === 'de'" type="button" [class.active]="activeTab === 'texts'" (click)="selectTab('texts')"><span>▤</span> Тексти <span class="tab-count">{{ readingTexts.length }}</span></button>
+      <nav class="tab-list" role="tablist" aria-label="Обрати матеріал">
+        <button type="button" role="tab" [attr.aria-selected]="activeTab === 'words'" [class.active]="activeTab === 'words'" (click)="selectTab('words')"><span>✦</span> Слова <span class="tab-count">{{ words.length }}</span></button>
+        <button type="button" role="tab" [attr.aria-selected]="activeTab === 'phrases'" [class.active]="activeTab === 'phrases'" (click)="selectTab('phrases')"><span>〝</span> Фрази <span class="tab-count">{{ phrases.length }}</span></button>
+        <button type="button" role="tab" [attr.aria-selected]="activeTab === 'texts'" [class.active]="activeTab === 'texts'" (click)="selectTab('texts')"><span>▤</span> Тексти <span class="tab-count">{{ readingTexts.length }}</span></button>
       </nav>
-      <p *ngIf="learningLanguage === 'en'" class="english-mode-note" role="status">
-        Англійська: картки зі словами та українськими значеннями. Фрази й тексти поки доступні лише в режимі німецької.
-      </p>
 
       <div *ngIf="feedback" class="feedback-banner" role="status">
         <span>✨</span><p>{{ feedback }}</p><button type="button" aria-label="Закрити повідомлення" (click)="feedback = ''">×</button>
@@ -136,13 +139,13 @@
           </label>
         </div>
         <div class="category-list" aria-label="Категорії слів">
-          <button *ngFor="let category of categories" type="button" [class.selected]="activeCategory === category" (click)="selectWordCategory(category)">
+          <button *ngFor="let category of categories" type="button" [class.selected]="activeCategory === category" [attr.aria-pressed]="activeCategory === category" (click)="selectWordCategory(category)">
             {{ category }}
           </button>
         </div>
         <div class="word-grid">
           <app-vocabulary-card
-            *ngFor="let word of paginatedWords"
+            *ngFor="let word of paginatedWords(); trackBy: trackWord"
             [word]="word"
             [language]="learningLanguage"
             [displayWord]="displayWord(word)"
@@ -152,7 +155,9 @@
             (learnedToggled)="markLearned($event)">
           </app-vocabulary-card>
         </div>
-        <p class="empty-state" *ngIf="visibleWords.length === 0">Нічого не знайдено. Зміни запит або категорію.</p>
+        <p class="empty-state" *ngIf="visibleWords.length === 0">
+          {{ activeCategory === favoritesFilter ? 'Поки немає обраних слів. Додай кілька сердечком на картці.' : 'Нічого не знайдено. Зміни запит або категорію.' }}
+        </p>
         <app-word-pagination
           [totalItems]="visibleWords.length"
           [pageSize]="wordPageSize"
@@ -169,9 +174,9 @@
         <div class="phrase-grid">
           <article class="phrase-card" *ngFor="let phrase of phrases">
             <span class="phrase-quote">„</span>
-            <h3>{{ phrase.german }}</h3>
+            <h3 [attr.lang]="learningLanguage">{{ phrase.text }}</h3>
             <p class="vocab-translation">{{ phrase.translation }}</p>
-            <div class="phrase-example"><span>ПРИКЛАД</span><p>{{ phrase.example }}</p></div>
+            <div class="phrase-example"><span>ПРИКЛАД</span><p [attr.lang]="learningLanguage">{{ phrase.example }}</p></div>
             <button type="button" class="phrase-practice" (click)="showPhraseFeedback(phrase)">Повторити вголос <span>↗</span></button>
           </article>
         </div>
@@ -190,7 +195,7 @@
               <span class="reading-action">{{ openText === i ? 'Згорнути −' : 'Читати +' }}</span>
             </button>
             <div class="reading-content" *ngIf="openText === i">
-              <p class="reading-german">{{ text.german }}</p>
+              <p class="reading-german" [attr.lang]="learningLanguage">{{ text.body }}</p>
               <details class="translation-details"><summary>Показати переклад</summary><p>{{ text.translation }}</p></details>
               <div class="comprehension">
                 <h4>Перевір себе</h4>
