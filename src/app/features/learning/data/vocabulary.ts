@@ -1,6 +1,7 @@
 ﻿import type { WordCard } from '../../../core/models/vocabulary.model';
 import { englishTranslations } from './english-translations';
 import { vocabularyExpansion } from './vocabulary-expansion';
+import { b1Expansion } from './b1-vocabulary-expansion';
 
 const ukrainianTerms: Record<string, string> = {
   квартира: 'квартира', комната: 'кімната', кухня: 'кухня', ванная: 'ванна кімната',
@@ -973,33 +974,196 @@ const b1Entries: Array<[string, string, string, string, string]> = [
   ['deshalb', 'therefore', 'тому', 'deshalb absagen', 'Der Termin wurde verschoben, deshalb komme ich später.'],
   ['obwohl', 'although', 'хоча', 'obwohl es schwierig ist', 'Obwohl es schwierig war, gab sie nicht auf.'],
   ['die Zuverlässigkeit', 'reliability', 'надійність', 'Zuverlässigkeit zeigen', 'Zuverlässigkeit ist im Beruf sehr wichtig.'],
+  ['die Absicht', 'intention', 'намір', 'in guter Absicht', 'Sie handelte in guter Absicht.'],
+  ['die Abteilung', 'department', 'відділ', 'in einer Abteilung arbeiten', 'Er arbeitet in der Abteilung für Marketing.'],
+  ['die Änderung', 'change', 'зміна', 'eine Änderung vornehmen', 'Wir müssen eine kleine Änderung vornehmen.'],
+  ['die Aussicht', 'view; prospect', 'вид; перспектива', 'eine gute Aussicht haben', 'Vom Balkon hat man eine schöne Aussicht.'],
+  ['die Behörde', 'authority', 'установа', 'bei einer Behörde anrufen', 'Sie rief bei der zuständigen Behörde an.'],
+  ['die Beschäftigung', 'employment; activity', 'зайнятість; заняття', 'eine Beschäftigung finden', 'Nach dem Kurs fand er eine neue Beschäftigung.'],
+  ['die Beziehung', 'relationship', 'стосунок', 'eine gute Beziehung pflegen', 'Sie pflegt eine gute Beziehung zu ihren Nachbarn.'],
+  ['die Kündigung', 'notice; termination', 'звільнення; розірвання', 'eine Kündigung erhalten', 'Er erhielt die Kündigung zum Monatsende.'],
+  ['die Leistung', 'performance; achievement', 'результат; досягнення', 'eine gute Leistung zeigen', 'Das Team zeigte eine starke Leistung.'],
+  ['die Nachbarschaft', 'neighborhood', 'сусідство', 'in der Nachbarschaft', 'In unserer Nachbarschaft gibt es einen kleinen Park.'],
+  ['die Rücksicht', 'consideration', 'уважність до інших', 'Rücksicht auf andere nehmen', 'Bitte nehmen Sie Rücksicht auf die anderen Gäste.'],
+  ['die Stelle', 'position; job', 'посада; робоче місце', 'sich auf eine Stelle bewerben', 'Sie bewirbt sich auf eine Stelle im Büro.'],
+  ['die Tätigkeit', 'activity; occupation', 'діяльність', 'eine Tätigkeit ausüben', 'Er übt eine verantwortungsvolle Tätigkeit aus.'],
+  ['die Ursache', 'cause', 'причина', 'die Ursache herausfinden', 'Die Polizei versucht, die Ursache des Unfalls herauszufinden.'],
+  ['die Vereinbarung', 'agreement', 'домовленість', 'eine Vereinbarung treffen', 'Wir trafen eine Vereinbarung für das nächste Jahr.'],
+  ['die Veranstaltung', 'event', 'захід', 'eine Veranstaltung besuchen', 'Viele Familien besuchten die Veranstaltung.'],
+  ['der Aufwand', 'effort; expense', 'зусилля; витрати', 'mit großem Aufwand', 'Die Reparatur war mit großem Aufwand verbunden.'],
+  ['der Bedarf', 'need; demand', 'потреба', 'den Bedarf decken', 'Das neue Angebot deckt den Bedarf der Familien.'],
+  ['der Bestandteil', 'component', 'складник', 'ein wichtiger Bestandteil', 'Übung ist ein wichtiger Bestandteil des Kurses.'],
+  ['der Betrieb', 'company; operation', 'підприємство; робота', 'in einem Betrieb arbeiten', 'Sie arbeitet in einem kleinen Familienbetrieb.'],
+  ['der Eigentümer', 'owner', 'власник', 'der Eigentümer des Hauses', 'Der Eigentümer renoviert gerade das Haus.'],
+  ['der Erfolg', 'success', 'успіх', 'Erfolg haben', 'Mit Geduld kann man langfristig Erfolg haben.'],
+  ['der Haushalt', 'household; budget', 'домашнє господарство; бюджет', 'den Haushalt organisieren', 'Die Familie organisiert den Haushalt gemeinsam.'],
+  ['der Hinweis', 'note; indication', 'вказівка; підказка', 'einen Hinweis geben', 'Die Lehrerin gab einen hilfreichen Hinweis.'],
+  ['der Kollege', 'colleague', 'колега', 'mit Kollegen zusammenarbeiten', 'Er arbeitet gern mit seinen Kollegen zusammen.'],
+  ['der Kunde', 'customer', 'клієнт', 'einen Kunden beraten', 'Die Mitarbeiterin berät einen Kunden am Telefon.'],
+  ['der Mangel', 'lack; defect', 'нестача; недолік', 'einen Mangel feststellen', 'Bei der Lieferung stellte sie einen Mangel fest.'],
+  ['der Nachteil', 'disadvantage', 'недолік', 'einen Nachteil haben', 'Der lange Arbeitsweg ist ein großer Nachteil.'],
+  ['der Schwerpunkt', 'focus; main area', 'основний напрям', 'einen Schwerpunkt setzen', 'Der Kurs setzt einen Schwerpunkt auf Kommunikation.'],
+  ['der Sinn', 'meaning; sense', 'сенс', 'einen Sinn ergeben', 'Deine Erklärung ergibt jetzt einen Sinn.'],
+  ['der Umfang', 'scope; size', 'обсяг', 'im Umfang wachsen', 'Der Umfang des Projekts ist größer geworden.'],
+  ['der Umzug', 'move; relocation', 'переїзд', 'einen Umzug planen', 'Sie plant ihren Umzug in eine andere Stadt.'],
+  ['der Wettbewerb', 'competition', 'конкуренція; змагання', 'an einem Wettbewerb teilnehmen', 'Die Schule nimmt an einem Sprachwettbewerb teil.'],
+  ['der Zweifel', 'doubt', 'сумнів', 'Zweifel haben', 'Sie hatte zunächst Zweifel an dem Plan.'],
+  ['das Anliegen', 'concern; request', 'прохання; питання', 'ein Anliegen besprechen', 'Der Kunde möchte sein Anliegen persönlich besprechen.'],
+  ['das Einkommen', 'income', 'дохід', 'ein regelmäßiges Einkommen', 'Ein regelmäßiges Einkommen gibt der Familie Sicherheit.'],
+  ['das Ereignis', 'event', 'подія', 'ein wichtiges Ereignis', 'Die Eröffnung war ein wichtiges Ereignis für die Stadt.'],
+  ['das Ergebnis', 'result', 'результат', 'ein Ergebnis bekannt geben', 'Das Ergebnis wird morgen bekannt gegeben.'],
+  ['das Mitglied', 'member', 'учасник; член', 'Mitglied eines Vereins sein', 'Sie ist seit Jahren Mitglied eines Sportvereins.'],
+  ['das Verhältnis', 'relationship; proportion', 'стосунки; співвідношення', 'ein gutes Verhältnis haben', 'Er hat ein gutes Verhältnis zu seinem Bruder.'],
+  ['das Verhalten', 'behavior', 'поведінка', 'das Verhalten erklären', 'Die Lehrerin erklärte das Verhalten des Kindes.'],
+  ['das Vorbild', 'role model', 'приклад для наслідування', 'ein Vorbild sein', 'Seine ältere Schwester ist für ihn ein Vorbild.'],
+  ['das Ziel', 'goal; destination', 'мета; пункт призначення', 'ein Ziel erreichen', 'Mit kleinen Schritten kannst du dein Ziel erreichen.'],
+  ['ablehnen', 'to reject', 'відхиляти', 'einen Vorschlag ablehnen', 'Der Ausschuss lehnte den Vorschlag zunächst ab.'],
+  ['anbieten', 'to offer', 'пропонувати', 'Hilfe anbieten', 'Die Nachbarin bot ihre Hilfe an.'],
+  ['annehmen', 'to accept; assume', 'приймати; припускати', 'eine Einladung annehmen', 'Er nahm die Einladung zum Abendessen gern an.'],
+  ['aufgeben', 'to give up; hand in', 'здаватися; подавати', 'nicht so schnell aufgeben', 'Auch bei Schwierigkeiten sollte man nicht aufgeben.'],
+  ['ausreichen', 'to be sufficient', 'вистачати', 'für alle ausreichen', 'Das Essen reicht für alle Gäste aus.'],
+  ['beantragen', 'to apply for', 'подавати заяву на', 'einen Pass beantragen', 'Sie beantragte einen neuen Pass beim Amt.'],
+  ['begegnen', 'to meet; encounter', 'зустрічати', 'einem alten Freund begegnen', 'Auf dem Markt begegnete ich einem alten Freund.'],
+  ['sich beschäftigen', 'to engage with', 'займатися', 'sich mit einem Thema beschäftigen', 'Die Gruppe beschäftigt sich mit dem Thema Umweltschutz.'],
+  ['beschließen', 'to decide; resolve', 'ухвалювати', 'eine Änderung beschließen', 'Der Stadtrat beschloss eine Änderung der Regeln.'],
+  ['bestehen', 'to pass; consist', 'складатися; складати іспит', 'eine Prüfung bestehen', 'Sie hat die Prüfung beim ersten Versuch bestanden.'],
+  ['betreffen', 'to concern; affect', 'стосуватися', 'alle Mitarbeitenden betreffen', 'Die neue Regel betrifft alle Mitarbeitenden.'],
+  ['bewegen', 'to move; motivate', 'рухати; спонукати', 'jemanden zum Nachdenken bewegen', 'Der Film bewegte viele Menschen zum Nachdenken.'],
+  ['sich vorbereiten', 'to prepare', 'готуватися', 'sich auf eine Prüfung vorbereiten', 'Sie bereitet sich auf die Prüfung nächste Woche vor.'],
+  ['einführen', 'to introduce', 'запроваджувати', 'eine neue Regel einführen', 'Die Firma führte eine neue Regel für Besprechungen ein.'],
+  ['entstehen', 'to arise; develop', 'виникати', 'ein Problem entsteht', 'Durch das Missverständnis entstand ein Problem.'],
+  ['erledigen', 'to complete; take care of', 'виконувати; владнувати', 'eine Aufgabe erledigen', 'Vor dem Mittagessen erledigte sie alle wichtigen Aufgaben.'],
+  ['erreichen', 'to reach; achieve', 'досягати', 'ein Ergebnis erreichen', 'Gemeinsam können wir ein besseres Ergebnis erreichen.'],
+  ['erwarten', 'to expect', 'очікувати', 'eine Antwort erwarten', 'Wir erwarten Ihre Antwort bis Freitag.'],
+  ['feststellen', 'to determine; notice', 'встановлювати; помічати', 'einen Unterschied feststellen', 'Die Ärztin stellte eine deutliche Verbesserung fest.'],
+  ['fördern', 'to support; promote', 'підтримувати; сприяти', 'junge Talente fördern', 'Das Programm fördert junge Talente in der Region.'],
+  ['gelingen', 'to succeed', 'вдаватися', 'ein guter Anfang gelingt', 'Mit gemeinsamer Arbeit gelang ein guter Anfang.'],
+  ['gehören', 'to belong', 'належати', 'zu einer Gruppe gehören', 'Das Café gehört seit zehn Jahren zur Nachbarschaft.'],
+  ['gründen', 'to found', 'засновувати', 'einen Verein gründen', 'Die Freunde gründeten einen Verein für Sport und Kultur.'],
+  ['hinweisen', 'to point out', 'вказувати', 'auf einen Fehler hinweisen', 'Der Kollege wies freundlich auf den Fehler hin.'],
+  ['leisten', 'to achieve; provide', 'здійснювати; надавати', 'einen wichtigen Beitrag leisten', 'Freiwillige leisten einen wichtigen Beitrag zur Gemeinde.'],
+  ['lösen', 'to solve', 'розв’язувати', 'ein Problem lösen', 'Wir müssen das Problem gemeinsam lösen.'],
+  ['übernehmen', 'to take over; assume', 'брати на себе', 'eine Aufgabe übernehmen', 'Er übernahm die Aufgabe für das ganze Team.'],
+  ['unterscheiden', 'to distinguish', 'розрізняти', 'zwischen zwei Dingen unterscheiden', 'Man muss zwischen Meinung und Tatsache unterscheiden.'],
+  ['verändern', 'to change', 'змінювати', 'den Alltag verändern', 'Die neue Arbeit veränderte ihren Alltag.'],
+  ['sich verhalten', 'to behave', 'поводитися', 'sich ruhig verhalten', 'Bitte verhalten Sie sich während des Gesprächs ruhig.'],
+  ['verhindern', 'to prevent', 'запобігати', 'einen Fehler verhindern', 'Eine gute Vorbereitung kann viele Fehler verhindern.'],
+  ['veröffentlichen', 'to publish', 'публікувати', 'einen Bericht veröffentlichen', 'Die Zeitung veröffentlichte einen Bericht über das Projekt.'],
+  ['vorkommen', 'to occur; seem', 'траплятися; здаватися', 'häufig vorkommen', 'Solche Fragen kommen im Alltag häufig vor.'],
+  ['wahrnehmen', 'to perceive; attend', 'сприймати; відвідувати', 'einen Termin wahrnehmen', 'Sie konnte den Termin am Dienstag wahrnehmen.'],
+  ['wesentlich', 'essential; significant', 'суттєвий', 'wesentlich für den Erfolg', 'Gute Kommunikation ist wesentlich für den Erfolg.'],
+  ['allerdings', 'however', 'однак', 'allerdings gibt es ein Problem', 'Der Weg ist kurz, allerdings fährt der Bus selten.'],
+  ['die Absprache', 'arrangement', 'домовленість', 'nach Absprache', 'Nach Absprache können wir den Raum früher nutzen.'],
+  ['die Erkenntnis', 'insight; finding', 'усвідомлення; висновок', 'zu einer Erkenntnis kommen', 'Durch das Gespräch kam sie zu einer wichtigen Erkenntnis.'],
+  ['die Frist', 'deadline; period', 'строк', 'eine Frist einhalten', 'Bitte halten Sie die Frist für die Anmeldung ein.'],
+  ['die Erwartung', 'expectation', 'очікування', 'die Erwartungen erfüllen', 'Das neue Angebot hat unsere Erwartungen erfüllt.'],
+  ['die Rückmeldung', 'feedback; response', 'відгук; відповідь', 'eine Rückmeldung geben', 'Die Teilnehmenden gaben eine positive Rückmeldung.'],
+  ['die Schwierigkeit', 'difficulty', 'труднощі', 'Schwierigkeiten überwinden', 'Mit Unterstützung konnte sie die Schwierigkeiten überwinden.'],
+  ['die Forschung', 'research', 'дослідження', 'in der Forschung arbeiten', 'Sie arbeitet seit drei Jahren in der medizinischen Forschung.'],
+  ['der Nachweis', 'proof; evidence', 'доказ; підтвердження', 'einen Nachweis vorlegen', 'Für die Anmeldung müssen Sie einen Nachweis vorlegen.'],
+  ['der Gegensatz', 'contrast; opposite', 'протилежність; контраст', 'im Gegensatz zu', 'Im Gegensatz zu gestern scheint heute die Sonne.'],
+  ['die Zustimmung', 'approval; agreement', 'згода; схвалення', 'die Zustimmung erhalten', 'Der Plan erhielt die Zustimmung aller Beteiligten.'],
+  ['das Angebot', 'offer; service', 'пропозиція; послуга', 'ein Angebot nutzen', 'Viele Familien nutzen das kostenlose Angebot.'],
+  ['das Gespräch', 'conversation', 'розмова', 'ein Gespräch führen', 'Die Mitarbeiterin führte ein Gespräch mit ihrem Vorgesetzten.'],
+  ['die Stimmung', 'mood; atmosphere', 'настрій; атмосфера', 'eine gute Stimmung schaffen', 'Musik schuf eine entspannte Stimmung im Raum.'],
+  ['das Verständnis', 'understanding', 'розуміння', 'Verständnis zeigen', 'Die Lehrerin zeigte Verständnis für die Situation.'],
+  ['das Vorhaben', 'plan; project', 'задум; план', 'ein Vorhaben umsetzen', 'Die Stadt möchte das Vorhaben im nächsten Jahr umsetzen.'],
+  ['daher', 'therefore; from there', 'тому; звідти', 'daher kommen', 'Der Zug hatte Verspätung, daher kamen wir später an.'],
+  ['inzwischen', 'meanwhile; by now', 'тим часом; тепер', 'inzwischen eine Lösung finden', 'Inzwischen haben wir eine passende Lösung gefunden.'],
+  ['jedenfalls', 'in any case', 'у будь-якому разі', 'jedenfalls versuchen', 'Jedenfalls sollten wir es gemeinsam versuchen.'],
+  ['stattdessen', 'instead', 'натомість', 'stattdessen zu Fuß gehen', 'Der Bus kam nicht, stattdessen gingen wir zu Fuß.'],
+  ['weder', 'neither', 'ні; ані', 'weder heute noch morgen', 'Der Termin passt weder heute noch morgen.'],
+  ['zufrieden', 'satisfied', 'задоволений', 'mit dem Ergebnis zufrieden sein', 'Sie ist mit dem Ergebnis sehr zufrieden.'],
 ];
+
+const b1Verbs = new Set([
+  'sich bewerben', 'sich entscheiden', 'teilnehmen', 'vermeiden', 'ermöglichen',
+  'berücksichtigen', 'behaupten', 'beeinflussen', 'sich entwickeln', 'vergleichen',
+  'vorschlagen', 'ablehnen', 'anbieten', 'annehmen', 'aufgeben', 'ausreichen',
+  'beantragen', 'begegnen', 'sich beschäftigen', 'beschließen', 'bestehen',
+  'betreffen', 'bewegen', 'einführen', 'entstehen', 'erledigen', 'erreichen',
+  'erwarten', 'feststellen', 'fördern', 'gelingen', 'gehören', 'gründen',
+  'hinweisen', 'leisten', 'lösen', 'übernehmen', 'unterscheiden', 'verändern',
+  'sich verhalten', 'verhindern', 'veröffentlichen', 'vorkommen', 'wahrnehmen',
+  'sich vorbereiten',
+]);
+const b1Adjectives = new Set([
+  'zuverlässig', 'unabhängig', 'notwendig', 'wahrscheinlich', 'wesentlich', 'zufrieden',
+]);
+const b1Adverbs = new Set(['trotzdem', 'währenddessen', 'außerdem', 'deshalb', 'daher', 'inzwischen', 'jedenfalls', 'stattdessen']);
+const b1Conjunctions = new Set(['obwohl', 'weder']);
 
 const b1Vocabulary: WordCard[] = b1Entries.map(([word, translationEnglish, translation, phrase, example], index) => ({
   id: `b1-${index + 1}`,
   word,
   translation,
   translationEnglish,
-  category: 'Розвиток і суспільство',
-  kind: /^(sich |teilnehmen|vermeiden|ermöglichen|berücksichtigen|behaupten|beeinflussen|vergleichen|vorschlagen)/.test(word) ? 'verb' : /^(zuverlässig|unabhängig|notwendig|wahrscheinlich)$/.test(word) ? 'adjective' : 'noun',
+  category: b1Verbs.has(word)
+    ? 'Дії та спілкування'
+      : b1Adjectives.has(word)
+      ? 'Опис і думки'
+        : b1Adverbs.has(word) || b1Conjunctions.has(word)
+          ? 'Зв’язки й логіка'
+          : 'Робота й суспільство',
+  kind: b1Verbs.has(word)
+    ? 'verb'
+    : b1Adjectives.has(word)
+      ? 'adjective'
+      : b1Conjunctions.has(word)
+        ? 'conjunction'
+        : b1Adverbs.has(word)
+          ? 'adverb'
+          : 'noun',
   phrase,
   example,
   level: 'B1',
 }));
 
+const normalizeHeadword = (word: string): string =>
+  word.normalize('NFC').trim().toLocaleLowerCase('de');
+const existingHeadwords = new Set(
+  [...originalVocabulary, ...vocabularyExpansion, ...b1Vocabulary].map((word) =>
+    normalizeHeadword(word.word),
+  ),
+);
+const b1Buckets = new Map<string, WordCard[]>();
+for (const word of b1Expansion) {
+  const key = normalizeHeadword(word.word);
+  if (existingHeadwords.has(key)) continue;
+  existingHeadwords.add(key);
+  const bucket = b1Buckets.get(word.category) ?? [];
+  bucket.push(word);
+  b1Buckets.set(word.category, bucket);
+}
+
+const b1AdditionalVocabulary: WordCard[] = [];
+const b1BucketRows = [...b1Buckets.values()];
+while (b1AdditionalVocabulary.length < 349 && b1BucketRows.some((bucket) => bucket.length > 0)) {
+  for (const bucket of b1BucketRows) {
+    const word = bucket.shift();
+    if (word) b1AdditionalVocabulary.push(word);
+    if (b1AdditionalVocabulary.length === 349) break;
+  }
+}
+if (b1AdditionalVocabulary.length !== 349) {
+  throw new Error(`Expected 349 unique B1 additions, found ${b1AdditionalVocabulary.length}.`);
+}
+
 export const vocabulary: WordCard[] = [
   ...originalVocabulary,
   ...vocabularyExpansion.map((word) => ({ ...word, level: 'A2' as const })),
   ...b1Vocabulary,
+  ...b1AdditionalVocabulary,
 ];
 
 const a2Vocabulary = vocabulary.filter((word) => word.level === 'A2');
 if (
   a2Vocabulary.length !== 1000 ||
   new Set(a2Vocabulary.map((word) => word.id)).size !== 1000 ||
-  b1Vocabulary.length !== b1Entries.length
+  vocabulary.filter((word) => word.level === 'B1').length !== 500 ||
+  new Set(vocabulary.filter((word) => word.level === 'B1').map((word) => normalizeHeadword(word.word))).size !== 500
 ) {
-  throw new Error('Expected 1000 A2 cards and a complete B1 vocabulary set.');
+  throw new Error('Expected 1000 A2 cards and 500 unique B1 vocabulary cards.');
 }
 
 export { germanPhrases as phrases, germanReadingTexts as readingTexts } from './learning-materials';

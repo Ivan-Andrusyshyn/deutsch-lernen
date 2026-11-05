@@ -5,11 +5,13 @@
       {{ language === "de" ? "НІМЕЦЬКЕ СЛОВО" : "АНГЛІЙСЬКЕ СЛОВО" }}
     </div>
     <span class="word-card-position"
-      >Картка {{ position }} з {{ totalWords }}</span
+      >Слово {{ position }} із {{ totalWords }}</span
     >
   </div>
   <div
     class="word-slider"
+    role="group"
+    aria-label="Картка слова. Стрілки вліво й вправо перемикають слова"
     tabindex="0"
     aria-keyshortcuts="ArrowLeft ArrowRight"
     (touchstart)="onTouchStart($event)"
@@ -29,7 +31,7 @@
           <p class="word-hint">{{ word.translation }}</p>
         </div>
         <p class="word-hint hidden-hint" *ngIf="!showAnswer">
-          Згадай значення, а потім відкрий відповідь
+          Згадай значення, потім відкрий переклад
         </p>
       </div>
       <div class="word-example" *ngIf="language === 'de'">
@@ -54,7 +56,7 @@
       type="button"
       (click)="answerToggled.emit()"
     >
-      Показати переклад <span>⌄</span>
+      Показати переклад <span aria-hidden="true">⌄</span>
     </button>
     <button
       *ngIf="showAnswer"
@@ -62,13 +64,12 @@
       type="button"
       (click)="answerToggled.emit()"
     >
-      Повторити пізніше
+      Сховати переклад
     </button>
     <button class="primary-button" type="button" (click)="learned.emit(word)">
-      {{ alreadyLearned ? "Вже вивчено · далі" : "Вивчив(-ла) · далі" }}
+      {{ alreadyLearned ? "Вже вивчено · далі" : "Знаю слово · далі" }}
       <span aria-hidden="true">→</span>
     </button>
-    <span class="encouragement-mini">У тебе все вийде! <span>✦</span></span>
   </div>
   <div class="slider-controls" aria-label="Перемикання карток">
     <button
@@ -79,14 +80,19 @@
       <span aria-hidden="true">←</span
       ><span class="slider-button-label">Назад</span>
     </button>
-    <div class="slider-progress">
+    <div
+      class="slider-progress"
+      role="progressbar"
+      aria-label="Позиція в наборі слів"
+      [attr.aria-valuemin]="1"
+      [attr.aria-valuemax]="totalWords"
+      [attr.aria-valuenow]="position">
       <span [style.width.%]="(position / totalWords) * 100"></span>
     </div>
-    <span class="slider-position">{{ position }} / {{ totalWords }}</span>
-    <button type="button" aria-label="Наступне слово" (click)="next.emit()">
-      <span class="slider-button-label">Далі</span
+    <button type="button" aria-label="Наступне слово. Поточне залишиться для повторення" (click)="next.emit()">
+      <span class="slider-button-label">Пропустити</span
       ><span aria-hidden="true">→</span>
     </button>
-    <span class="swipe-hint">Можна гортати свайпом</span>
+    <span class="swipe-hint">Свайп або «Пропустити» — прогрес не зміниться</span>
   </div>
 </article>

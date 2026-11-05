@@ -1,0 +1,59 @@
+<section class="sentence-practice" [class.quiz-mode]="mode === 'quiz'" aria-labelledby="sentence-practice-title">
+  <div class="sentence-practice-heading">
+    <div>
+      <p class="sentence-kicker">{{ mode === 'quiz' ? 'МІНІКВІЗ' : 'ТРЕНУЙ ЦІЛІ РЕЧЕННЯ' }} · {{ language === 'de' ? 'НІМЕЦЬКА' : 'АНГЛІЙСЬКА' }} · {{ level }}</p>
+      <h3 id="sentence-practice-title">{{ mode === 'quiz' ? 'Як перекладається речення?' : 'Вчи цілі речення' }}</h3>
+      <p class="sentence-instructions">{{ mode === 'quiz' ? 'Перекладай, добирай речення й заповнюй пропуски. Обери відповідь, щоб побачити результат.' : 'Прочитай речення, спробуй перекласти самостійно, а потім відкрий підказку.' }}</p>
+    </div>
+      <span class="sentence-counter">{{ index + 1 }} <span>із</span> {{ totalItems }}</span>
+  </div>
+
+  <div class="sentence-progress" role="progressbar" aria-label="Позиція у вправі"
+       [attr.aria-valuemin]="1" [attr.aria-valuemax]="totalItems" [attr.aria-valuenow]="index + 1">
+    <span [style.width.%]="totalItems ? ((index + 1) / totalItems) * 100 : 0"></span>
+  </div>
+
+  <article class="sentence-exercise" [class.quiz-question-card]="mode === 'quiz'" *ngIf="currentSentence as sentence">
+    <span class="sentence-label">{{ mode === 'quiz' && quizQuestion?.kind === 'reverse' ? 'УКРАЇНСЬКОЮ · ОБЕРИ РЕЧЕННЯ' : mode === 'quiz' && (quizQuestion?.kind === 'gap' || quizQuestion?.kind === 'gap-second') ? 'ЗАПОВНИ ПРОПУСК · ' + (language === 'de' ? 'DEUTSCH' : 'ENGLISH') : language === 'de' ? 'DEUTSCH' : 'ENGLISH' }}</span>
+    <p class="sentence-text" [attr.lang]="mode === 'quiz' && quizQuestion?.kind === 'reverse' ? 'uk' : language">{{ mode === 'quiz' ? quizQuestion?.prompt : sentence.text }}</p>
+    <ng-container *ngIf="mode === 'quiz'; else sentenceCards">
+      <div class="quiz-options" role="group" aria-label="Варіанти відповіді" *ngIf="quizQuestion as question">
+        <button *ngFor="let option of question.options; let i = index" type="button" class="quiz-option"
+          [class.correct]="selectedAnswer !== null && option === question.answer"
+          [class.incorrect]="selectedAnswer === option && !answerIsCorrect"
+          [disabled]="selectedAnswer !== null" (click)="chooseAnswer(option)">
+          <span>{{ ['А', 'Б', 'В', 'Г'][i] }}</span>{{ option }}
+        </button>
+      </div>
+      <p *ngIf="selectedAnswer !== null" class="quiz-feedback" [class.correct]="answerIsCorrect" [class.incorrect]="!answerIsCorrect" aria-live="polite">
+        {{ answerIsCorrect ? 'Чудово! Правильна відповідь.' : 'Ще потренуємося — правильний варіант підсвічено.' }}
+      </p>
+      <button *ngIf="selectedAnswer !== null && index < totalItems - 1" class="quiz-next-button" type="button" (click)="next()">
+        <span>Наступне запитання</span><span class="quiz-next-arrow" aria-hidden="true">→</span>
+      </button>
+      <p *ngIf="selectedAnswer !== null && index === totalItems - 1" class="quiz-last-question" aria-live="polite">
+        Це останнє запитання — квіз завершено!
+      </p>
+    </ng-container>
+    <ng-template #sentenceCards>
+    <div class="sentence-answer" *ngIf="showTranslation" aria-live="polite">
+      <span>ПЕРЕКЛАД</span>
+      <p>{{ sentence.translation }}</p>
+    </div>
+    <button class="sentence-reveal" type="button" (click)="toggleTranslation()">
+      {{ showTranslation ? 'Сховати переклад' : 'Показати переклад' }}
+      <span aria-hidden="true">{{ showTranslation ? '⌃' : '⌄' }}</span>
+    </button>
+    </ng-template>
+  </article>
+
+  <div class="sentence-navigation" [class.quiz-sentence-navigation]="mode === 'quiz'" *ngIf="currentSentence">
+    <button type="button" (click)="previous()" [disabled]="index === 0" [attr.aria-label]="mode === 'quiz' ? 'Попереднє питання' : 'Попереднє речення'">
+      <span aria-hidden="true">←</span> {{ mode === 'quiz' ? 'Попереднє' : 'Назад' }}
+    </button>
+    <span class="sentence-no-save"><span aria-hidden="true">↗</span> Тренування без втрати прогресу</span>
+    <button *ngIf="mode !== 'quiz'" type="button" (click)="next()" [disabled]="index === totalItems - 1" aria-label="Наступне речення">
+      Далі <span aria-hidden="true">→</span>
+    </button>
+  </div>
+</section>

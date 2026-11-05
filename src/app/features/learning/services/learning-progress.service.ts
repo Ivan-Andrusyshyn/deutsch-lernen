@@ -85,19 +85,29 @@ export class LearningProgressService {
     }
   }
 
-  markLearned(wordId: string, dailyGoal: number): 'already' | 'learned' {
+  markLearned(
+    wordId: string,
+    dailyGoal: number,
+    levelWordIds?: ReadonlySet<string>,
+  ): 'already' | 'learned' {
     if (this.learned().has(wordId)) {
       return 'already';
     }
 
-    const previousTodayCount = this.todayCount();
+    const today = this.todayKey;
+    const previousTodayIds = this.dailyProgress()[today] ?? [];
+    const previousTodayCount = levelWordIds
+      ? new Set(previousTodayIds.filter((id) => levelWordIds.has(id))).size
+      : new Set(previousTodayIds).size;
     this.learned.update((ids) => new Set(ids).add(wordId));
 
-    const today = this.todayKey;
     const todayIds = [...new Set([...(this.dailyProgress()[today] ?? []), wordId])];
     this.dailyProgress.update((progress) => ({ ...progress, [today]: todayIds }));
 
-    if (previousTodayCount < dailyGoal && todayIds.length >= dailyGoal) {
+    const currentTodayCount = levelWordIds
+      ? new Set(todayIds.filter((id) => levelWordIds.has(id))).size
+      : todayIds.length;
+    if (previousTodayCount < dailyGoal && currentTodayCount >= dailyGoal) {
       this.showDailyGoalCelebration.set(true);
     }
     return 'learned';

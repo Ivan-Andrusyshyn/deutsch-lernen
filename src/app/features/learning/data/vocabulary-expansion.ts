@@ -266,8 +266,8 @@ export const vocabularyExpansion: WordCard[] = nounForms
       translationEnglish: englishForm,
       category,
       kind: 'noun',
-      phrase: wordForm,
-      example: `Ich lerne das Wort "${wordForm}".`,
+      phrase: `das Wort „${wordForm}“ nachschlagen`,
+      example: `Ich habe das Wort „${wordForm}“ im Wörterbuch nachgeschlagen.`,
       level: 'A2',
     });
 

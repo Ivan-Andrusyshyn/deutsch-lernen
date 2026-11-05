@@ -1,6 +1,6 @@
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { LearningPageComponent } from './learning-page.component';
-import { phrases, readingTexts, vocabulary } from '../../data/vocabulary';
+import { phrases, vocabulary } from '../../data/vocabulary';
 
 describe('LearningPageComponent', () => {
   beforeEach(async () => {
@@ -26,8 +26,10 @@ describe('LearningPageComponent', () => {
     expect(compiled.querySelector('.total-pill')?.textContent).toContain('1000 слів');
     expect(compiled.querySelector('.learning-language-picker')?.textContent).toContain('Німецьку');
     expect(compiled.querySelector('.learning-language-picker')?.textContent).toContain('Англійську');
-    expect(compiled.querySelectorAll('.language-option-text small')[0].textContent).toContain('1000 слів');
-    expect(compiled.querySelectorAll('.language-option-text small')[1].textContent).toContain('1000 слів');
+    expect(compiled.querySelectorAll('.language-option-text small')[0].textContent).toContain('A2 + B1');
+    expect(compiled.querySelectorAll('.language-option-text small')[1].textContent).toContain('A2 + B1');
+    expect(compiled.querySelectorAll('.tab-list button').length).toBe(2);
+    expect(compiled.querySelector('.tab-list')?.textContent).toContain('Практика');
   });
 
   it('switches the study word while keeping the Ukrainian meaning and category', () => {
@@ -63,7 +65,7 @@ describe('LearningPageComponent', () => {
     expect(compiled.querySelector('.daily-word h3')?.textContent?.trim()).toBe('the apartment');
     expect(compiled.querySelector('.vocab-translation')?.textContent?.trim()).toBe('квартира');
     expect(languageButton.getAttribute('aria-pressed')).toBe('true');
-    expect(compiled.querySelector('.tab-list')?.textContent).toContain('Фрази');
+    expect(compiled.querySelector('.tab-list')?.textContent).toContain('Практика');
     compiled.querySelectorAll<HTMLButtonElement>('.tab-list button')[1].click();
     fixture.detectChanges();
     expect(compiled.querySelectorAll('.phrase-card').length).toBeGreaterThan(0);
@@ -80,16 +82,19 @@ describe('LearningPageComponent', () => {
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('.word-card-position')?.textContent).toContain('Картка 1 з 1000');
+    expect(compiled.querySelector('.word-card-position')?.textContent).toContain('Слово 1 із 1000');
     expect(compiled.querySelector('.hidden-hint')?.textContent).toContain('Згадай значення');
-    expect(compiled.querySelector('.daily-actions .primary-button')?.textContent).toContain('Вивчив(-ла) · далі');
+    expect(compiled.querySelector('.daily-actions .primary-button')?.textContent).toContain('Знаю слово · далі');
+    expect(compiled.querySelector('.review-hint')?.textContent).toContain('прогрес не зміниться');
     expect(compiled.querySelector('.slider-button-label')?.textContent).toContain('Назад');
-    expect(compiled.querySelectorAll('.slider-button-label')[1]?.textContent).toContain('Далі');
+    expect(compiled.querySelectorAll('.slider-button-label')[1]?.textContent).toContain('Пропустити');
+    expect(compiled.querySelector('.slider-progress')?.getAttribute('aria-valuemax')).toBe('1000');
 
     (compiled.querySelector('.daily-actions .outline-button') as HTMLButtonElement).click();
     fixture.detectChanges();
     expect(compiled.querySelector('.translation-label')?.textContent).toBe('Українською');
     expect(compiled.querySelector('.translation-reveal .word-hint')?.textContent).toContain('квартира');
+    expect(compiled.querySelector('.daily-actions .outline-button')?.textContent).toContain('Сховати переклад');
   });
 
   it('switches levels and limits words, card navigation, and progress to the selected set', () => {
@@ -102,12 +107,72 @@ describe('LearningPageComponent', () => {
     expect(app.selectedWords.every((word) => word.level === 'A2')).toBeTrue();
     element.querySelector<HTMLButtonElement>('.level-picker button:nth-child(2)')?.click();
     fixture.detectChanges();
-    expect(app.selectedWords.length).toBe(51);
+    expect(app.selectedWords.length).toBe(500);
     expect(app.selectedWords.every((word) => word.level === 'B1')).toBeTrue();
     expect(app.currentWord.level).toBe('B1');
-    expect(element.querySelector('.word-card-position')?.textContent).toContain('Картка 1 з 51');
+    expect(element.querySelector('.word-card-position')?.textContent).toContain('Слово 1 із 500');
     expect(app.visibleWords.every((word) => word.level === 'B1')).toBeTrue();
     expect(app.wordPage).toBe(1);
+  });
+
+  it('keeps the daily goal and calendar activity scoped to the selected level', () => {
+    const fixture = TestBed.createComponent(LearningPageComponent);
+    fixture.detectChanges();
+    const app = fixture.componentInstance;
+    const a2Words = vocabulary.filter((word) => word.level === 'A2').slice(0, 3);
+    const b1Words = vocabulary.filter((word) => word.level === 'B1').slice(0, 3);
+    app.settings.setDailyGoal(3);
+
+    app.markLearned(a2Words[0]);
+    app.markLearned(a2Words[1]);
+    expect(app.todayCount).toBe(2);
+    expect(app.showDailyGoalCelebration).toBeFalse();
+
+    app.setLearningLevel('B1');
+    expect(app.todayCount).toBe(0);
+    app.markLearned(b1Words[0]);
+    expect(app.todayCount).toBe(1);
+    expect(app.showDailyGoalCelebration).toBeFalse();
+    app.markLearned(b1Words[1]);
+    expect(app.todayCount).toBe(2);
+    expect(app.showDailyGoalCelebration).toBeFalse();
+    app.markLearned(b1Words[2]);
+    expect(app.todayCount).toBe(3);
+    expect(app.showDailyGoalCelebration).toBeTrue();
+
+    app.setLearningLevel('A2');
+    expect(app.todayCount).toBe(2);
+    const todayKey = Object.keys(app.levelDailyProgress).find(
+      (key) => app.levelDailyProgress[key].length > 0,
+    )!;
+    expect(app.levelDailyProgress[todayKey]).toEqual(a2Words.slice(0, 2).map((word) => word.id));
+    fixture.destroy();
+  });
+
+  it('lets sentence practice run without changing or saving vocabulary progress', () => {
+    const fixture = TestBed.createComponent(LearningPageComponent);
+    fixture.detectChanges();
+    const app = fixture.componentInstance;
+    const element = fixture.nativeElement as HTMLElement;
+    app.markLearned(vocabulary[0]);
+    const learnedBefore = [...app.learned];
+    const dailyBefore = JSON.stringify(app.dailyProgress);
+    const savedBefore = window.localStorage.getItem('wortzeit-progress-de-v1');
+
+    (element.querySelector('.tab-list button:nth-child(2)') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    (element.querySelector('.practice-mode-switch button:nth-child(2)') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(element.querySelector('.sentence-practice')).not.toBeNull();
+    (element.querySelector('.sentence-reveal') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    (element.querySelector('[aria-label="Наступне речення"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    expect([...app.learned]).toEqual(learnedBefore);
+    expect(JSON.stringify(app.dailyProgress)).toBe(dailyBefore);
+    expect(window.localStorage.getItem('wortzeit-progress-de-v1')).toBe(savedBefore);
+    fixture.destroy();
   });
 
   it('paginates the vocabulary and applies the selected page size', () => {
@@ -158,7 +223,7 @@ describe('LearningPageComponent', () => {
     tick(0);
     expect(restoredFixture.componentInstance.learningLanguage).toBe('en');
     expect(restoredFixture.componentInstance.settings.level()).toBe('B1');
-    expect(restoredFixture.componentInstance.selectedWords.length).toBe(51);
+    expect(restoredFixture.componentInstance.selectedWords.length).toBe(500);
     expect(restoredFixture.componentInstance.theme).toBe('dark');
     window.localStorage.removeItem('wortzeit-settings-v1');
     window.localStorage.removeItem('deutsch-kompass-settings-v1');
@@ -410,7 +475,7 @@ describe('LearningPageComponent', () => {
     const fixture = TestBed.createComponent(LearningPageComponent);
     const app = fixture.componentInstance;
 
-    app.selectTab('texts');
+    app.selectTab('practice');
     app.activeCategory = app.categories[1];
     app.searchQuery = 'nonexistent';
     app.learned.add(vocabulary[0].id);
@@ -443,7 +508,7 @@ describe('LearningPageComponent', () => {
   it('shows a completion message when starting after all words are learned', () => {
     const app = TestBed.createComponent(LearningPageComponent).componentInstance;
     app.learned = new Set(vocabulary.map((word) => word.id));
-    app.activeTab = 'texts';
+    app.activeTab = 'practice';
     app.startLearning();
 
     expect(app.activeTab).toBe('words');
@@ -492,43 +557,28 @@ describe('LearningPageComponent', () => {
 
     compiled.querySelectorAll<HTMLButtonElement>('.tab-list button')[1].click();
     fixture.detectChanges();
-    expect(fixture.componentInstance.activeTab).toBe('phrases');
+    expect(fixture.componentInstance.activeTab).toBe('practice');
     expect(compiled.querySelectorAll('.phrase-card').length).toBe(phrases.length);
 
     compiled.querySelector<HTMLButtonElement>('.phrase-practice')?.click();
     fixture.detectChanges();
     expect(fixture.componentInstance.feedback).toContain(phrases[0].text);
 
-    compiled.querySelectorAll<HTMLButtonElement>('.tab-list button')[2].click();
+    compiled.querySelector<HTMLButtonElement>('.practice-mode-switch button:nth-child(2)')?.click();
     fixture.detectChanges();
-    expect(fixture.componentInstance.activeTab).toBe('texts');
-    expect(compiled.querySelectorAll('.reading-card').length).toBe(readingTexts.length);
+    expect(compiled.querySelector('.sentence-practice')).not.toBeNull();
+    expect(fixture.componentInstance.activeTab).toBe('practice');
 
-    compiled.querySelector<HTMLButtonElement>('.reading-toggle')?.click();
+    compiled.querySelector<HTMLButtonElement>('.practice-mode-switch button:nth-child(3)')?.click();
     fixture.detectChanges();
-    expect(fixture.componentInstance.openText).toBe(0);
-    expect(compiled.querySelector('.reading-content')).not.toBeNull();
-
-    const translationSummary = compiled.querySelector<HTMLElement>('.translation-details summary');
-    expect(translationSummary).not.toBeNull();
-    translationSummary!.click();
+    expect(compiled.querySelector('.sentence-practice h3')?.textContent).toContain('перекладається');
+    expect(compiled.querySelectorAll('.quiz-option').length).toBe(4);
+    const quizOptions = Array.from(compiled.querySelectorAll<HTMLButtonElement>('.quiz-option'));
+    quizOptions[0].click();
     fixture.detectChanges();
-    expect(compiled.querySelector('.translation-details')?.hasAttribute('open')).toBeTrue();
-
-    const answerSummary = compiled.querySelector<HTMLElement>('.comprehension details summary');
-    expect(answerSummary).not.toBeNull();
-    answerSummary!.click();
-    fixture.detectChanges();
-    expect(compiled.querySelector('.comprehension details')?.hasAttribute('open')).toBeTrue();
-
-    compiled.querySelector<HTMLButtonElement>('.reading-done')?.click();
-    fixture.detectChanges();
-    expect(fixture.componentInstance.feedback).toContain(readingTexts[0].title);
-
-    compiled.querySelector<HTMLButtonElement>('.reading-toggle')?.click();
-    fixture.detectChanges();
-    expect(fixture.componentInstance.openText).toBe(-1);
-    expect(compiled.querySelector('.reading-content')).toBeNull();
+    expect(compiled.querySelector('.quiz-feedback')).not.toBeNull();
+    expect(quizOptions.every((option) => option.disabled)).toBeTrue();
+    expect(compiled.querySelector('.sentence-practice')?.textContent).toContain('без втрати прогресу');
 
     compiled.querySelectorAll<HTMLButtonElement>('.tab-list button')[0].click();
     fixture.detectChanges();
@@ -581,12 +631,20 @@ describe('LearningPageComponent', () => {
     expect(phrases[0].translation).toBe('Доброго ранку!');
   });
 
-  it('includes 1000 A2 cards and 51 B1 cards with complete study examples', () => {
+  it('includes 1000 A2 cards and 500 unique B1 cards with complete study examples', () => {
     expect(vocabulary.filter((word) => word.level === 'A2').length).toBe(1000);
     const b1Words = vocabulary.filter((word) => word.level === 'B1');
-    expect(b1Words.length).toBe(51);
-    expect(new Set(b1Words.map((word) => word.word)).size).toBe(51);
-    expect(new Set(vocabulary.map((word) => word.id)).size).toBe(1051);
+    expect(b1Words.length).toBe(500);
+    expect(new Set(b1Words.map((word) => word.word.normalize('NFC').trim().toLocaleLowerCase('de'))).size).toBe(500);
+    expect(new Set(vocabulary.map((word) => word.id)).size).toBe(1500);
+    expect(b1Words.filter((word) => word.id.startsWith('b1-extra-')).every((word) =>
+      word.level === 'B1' && word.translation.trim() && word.translationEnglish.trim() &&
+      word.category.trim() && word.phrase.trim() && word.example.includes(word.word),
+    )).toBeTrue();
+    const a2Headwords = new Set(vocabulary.filter((word) => word.level === 'A2').map((word) => word.word.normalize('NFC').trim().toLocaleLowerCase('de')));
+    expect(b1Words.filter((word) => word.id.startsWith('b1-extra-')).some((word) =>
+      a2Headwords.has(word.word.normalize('NFC').trim().toLocaleLowerCase('de')),
+    )).toBeFalse();
     expect(vocabulary.every((word) =>
       word.translation && word.translationEnglish && word.category && word.phrase && word.example,
     )).toBeTrue();
@@ -603,9 +661,12 @@ describe('LearningPageComponent', () => {
     ).toEqual([]);
   });
 
-  it('includes practice phrases and reading texts', () => {
+  it('includes practice phrases and removes the separate reading tab', () => {
     expect(phrases.length).toBeGreaterThan(0);
-    expect(readingTexts.length).toBe(8);
-    expect(readingTexts.every((text) => text.questions.length > 0)).toBeTrue();
+    const fixture = TestBed.createComponent(LearningPageComponent);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelectorAll('.tab-list button').length).toBe(2);
+    expect(fixture.nativeElement.querySelector('.tab-list')?.textContent).not.toContain('Тексти');
+    fixture.destroy();
   });
 });

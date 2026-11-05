@@ -32,11 +32,11 @@
           <div class="learning-language-switch">
             <button type="button" [class.active]="learningLanguage === 'de'" [attr.aria-pressed]="learningLanguage === 'de'" (click)="setLearningLanguage('de')">
               <span class="language-code">DE</span>
-              <span class="language-option-text"><strong>Німецьку</strong><small>1000 слів</small></span>
+              <span class="language-option-text"><strong>Німецьку</strong><small>A2 + B1</small></span>
             </button>
             <button type="button" [class.active]="learningLanguage === 'en'" [attr.aria-pressed]="learningLanguage === 'en'" (click)="setLearningLanguage('en')">
               <span class="language-code">EN</span>
-              <span class="language-option-text"><strong>Англійську</strong><small>1000 слів</small></span>
+              <span class="language-option-text"><strong>Англійську</strong><small>A2 + B1</small></span>
             </button>
           </div>
         </div>
@@ -44,16 +44,16 @@
           <span class="language-picker-label">МІЙ РІВЕНЬ</span>
           <div class="learning-language-switch">
             <button type="button" [class.active]="settings.level() === 'A2'" [attr.aria-pressed]="settings.level() === 'A2'" (click)="setLearningLevel('A2')">
-              <span class="language-code">A2</span><span class="language-option-text"><strong>Базовий</strong><small>1000 слів</small></span>
+              <span class="language-code">A2</span><span class="language-option-text"><strong>Базовий</strong><small>{{ levelWordCountLabel('A2') }}</small></span>
             </button>
             <button type="button" [class.active]="settings.level() === 'B1'" [attr.aria-pressed]="settings.level() === 'B1'" (click)="setLearningLevel('B1')">
-              <span class="language-code">B1</span><span class="language-option-text"><strong>Середній</strong><small>51 слово</small></span>
+              <span class="language-code">B1</span><span class="language-option-text"><strong>Середній</strong><small>{{ levelWordCountLabel('B1') }}</small></span>
             </button>
           </div>
         </div>
         <p class="profile-save-note" role="note">
           <span aria-hidden="true">✓</span>
-          Результати німецької й англійської зберігаються окремо. Перемикання рівня їх не стирає.
+          Прогрес і календар показують вибрану мову та рівень. Денна ціль спільна, її лічильник — для активного рівня.
         </p>
         <button class="primary-button hero-button" type="button" (click)="startLearning()">
           <span>Почати навчання</span><span aria-hidden="true">→</span>
@@ -101,10 +101,10 @@
       </div>
       <div class="stats-row">
         <div class="stat-item"><span class="stat-icon peach">✦</span><span><strong>{{ selectedLearnedCount }}</strong><small>вивчено слів</small></span></div>
-        <div class="stat-item"><span class="stat-icon mint">◷</span><span><strong>{{ todayCount }} / {{ dailyGoal }}</strong><small>мета на сьогодні</small></span></div>
+        <div class="stat-item"><span class="stat-icon mint">◷</span><span><strong>{{ todayCount }} / {{ dailyGoal }}</strong><small>сьогодні · {{ settings.level() }}</small></span></div>
         <div class="stat-item"><span class="stat-icon lilac">♡</span><span><strong>{{ selectedFavoriteCount }}</strong><small>в обраному · {{ settings.level() }}</small></span></div>
       </div>
-      <app-learning-calendar [dailyProgress]="dailyProgress" [words]="words" [language]="learningLanguage" />
+      <app-learning-calendar [dailyProgress]="levelDailyProgress" [words]="selectedWords" [language]="learningLanguage" />
     </section>
 
     <section id="learning" class="learning-section" aria-label="Навчальні матеріали">
@@ -118,13 +118,9 @@
 
       <nav class="tab-list" role="tablist" aria-label="Обрати матеріал">
         <button type="button" role="tab" [attr.aria-selected]="activeTab === 'words'" [class.active]="activeTab === 'words'" (click)="selectTab('words')"><span>✦</span> Слова <span class="tab-count">{{ selectedWords.length }}</span></button>
-        <button type="button" role="tab" [attr.aria-selected]="activeTab === 'phrases'" [class.active]="activeTab === 'phrases'" (click)="selectTab('phrases')"><span>〝</span> Фрази <span class="tab-count">{{ phrases.length }}</span></button>
-        <button type="button" role="tab" [attr.aria-selected]="activeTab === 'texts'" [class.active]="activeTab === 'texts'" (click)="selectTab('texts')"><span>▤</span> Тексти <span class="tab-count">{{ readingTexts.length }}</span></button>
+        <button type="button" class="practice-tab" role="tab" [attr.aria-selected]="activeTab === 'practice'" [class.active]="activeTab === 'practice'" (click)="selectTab('practice')"><span class="practice-tab-icon" aria-hidden="true">✧</span><span>Практика</span><span class="tab-count">3 формати</span></button>
       </nav>
 
-      <div *ngIf="feedback" class="feedback-banner" role="status">
-        <span>✨</span><p>{{ feedback }}</p><button type="button" aria-label="Закрити повідомлення" (click)="feedback = ''">×</button>
-      </div>
       <div *ngIf="storageMessage" class="storage-message" role="status">{{ storageMessage }}</div>
 
       <ng-container *ngIf="activeTab === 'words'">
@@ -146,6 +142,9 @@
             <div><h3>Увесь словник пройдено!</h3><p>Неймовірний результат. Повтори обрані слова або обери іншу мову навчання.</p></div>
           </article>
         </ng-template>
+        <div *ngIf="feedback" class="feedback-banner" role="status">
+          <span class="feedback-icon" aria-hidden="true">✦</span><p>{{ feedback }}</p><button type="button" aria-label="Закрити повідомлення" (click)="feedback = ''">×</button>
+        </div>
 
         <div class="library-heading">
           <div><h3>Словник {{ learningLanguageName }}</h3><p>Обирай слова, які хочеш повторити</p></div>
@@ -182,12 +181,37 @@
           (pageSizeChange)="onWordPageSizeChange($event)" />
       </ng-container>
 
-      <ng-container *ngIf="activeTab === 'phrases'">
-        <div class="content-intro">
-          <h3>Фрази на щодень</h3>
-          <p>Готові вислови для спілкування, подорожей і маленьких перемог.</p>
+      <ng-container *ngIf="activeTab === 'practice'">
+        <div class="practice-heading">
+          <div class="content-intro">
+            <p class="practice-eyebrow">ПРАКТИКА · {{ learningLanguageName }} · {{ settings.level() }}</p>
+            <h3>Практика мовлення</h3>
+            <p>Обери вправу під настрій: розігрійся з фразами, потренуй речення або перевір себе.</p>
+          </div>
+          <div class="practice-mode-switch" [class.compact-tabs]="practiceModeChosen" role="group" aria-label="Обрати формат практики">
+            <button type="button" class="practice-choice" [class.active]="practiceMode === 'phrases'" [attr.aria-pressed]="practiceMode === 'phrases'" (click)="setPracticeMode('phrases')">
+              <span class="practice-choice-icon phrase-icon" aria-hidden="true">〝</span>
+              <span class="practice-choice-copy"><strong>Фрази</strong><small>Корисні вислови на щодень</small></span>
+              <span class="practice-choice-count">{{ phrases.length }}</span>
+            </button>
+            <button type="button" class="practice-choice" [class.active]="practiceMode === 'sentences'" [attr.aria-pressed]="practiceMode === 'sentences'" (click)="setPracticeMode('sentences')">
+              <span class="practice-choice-icon sentence-icon" aria-hidden="true">↔</span>
+              <span class="practice-choice-copy"><strong>Речення</strong><small>Перекладай і запам’ятовуй</small></span>
+              <span class="practice-choice-count">50</span>
+            </button>
+            <button type="button" class="practice-choice quiz-mode-button" [class.active]="practiceMode === 'quiz'" [attr.aria-pressed]="practiceMode === 'quiz'" (click)="setPracticeMode('quiz')">
+              <span class="practice-choice-icon quiz-mode-spark" aria-hidden="true">✦</span>
+              <span class="practice-choice-copy"><strong>Мініквіз</strong><small>Перевір себе у 200 завданнях</small></span>
+              <span class="practice-choice-count">200</span>
+            </button>
+          </div>
         </div>
-        <div class="phrase-grid">
+        <div *ngIf="feedback" class="feedback-banner practice-feedback" role="status">
+          <span class="feedback-icon" aria-hidden="true">✦</span><p>{{ feedback }}</p><button type="button" aria-label="Закрити повідомлення" (click)="feedback = ''">×</button>
+        </div>
+
+        <div id="practice-content" class="practice-content" [attr.data-mode]="practiceMode">
+        <div class="phrase-grid" *ngIf="practiceMode === 'phrases'">
           <article class="phrase-card" *ngFor="let phrase of phrases">
             <span class="phrase-quote">„</span>
             <h3 [attr.lang]="learningLanguage">{{ phrase.text }}</h3>
@@ -196,39 +220,21 @@
             <button type="button" class="phrase-practice" (click)="showPhraseFeedback(phrase)">Повторити вголос <span>↗</span></button>
           </article>
         </div>
-      </ng-container>
 
-      <ng-container *ngIf="activeTab === 'texts'">
-        <div class="content-intro">
-          <h3>Читаємо й розуміємо</h3>
-          <p>Короткі історії з перекладом і запитаннями для самоперевірки.</p>
-        </div>
-        <div class="reading-list">
-          <article class="reading-card" *ngFor="let text of readingTexts; let i = index">
-            <button class="reading-toggle" type="button" (click)="toggleText(i)" [attr.aria-expanded]="openText === i">
-              <span class="reading-icon">{{ i === 0 ? '☀' : i === 1 ? '✈' : '♡' }}</span>
-              <span class="reading-title"><small>{{ text.level }}</small><strong>{{ text.title }}</strong></span>
-              <span class="reading-action">{{ openText === i ? 'Згорнути −' : 'Читати +' }}</span>
-            </button>
-            <div class="reading-content" *ngIf="openText === i">
-              <p class="reading-german" [attr.lang]="learningLanguage">{{ text.body }}</p>
-              <details class="translation-details"><summary>Показати переклад</summary><p>{{ text.translation }}</p></details>
-              <div class="comprehension">
-                <h4>Перевір себе</h4>
-                <div *ngFor="let item of text.questions"><p>{{ item.question }}</p><details><summary>Показати відповідь</summary><p>{{ item.answer }}</p></details></div>
-              </div>
-              <button class="primary-button reading-done" type="button" (click)="showTextFeedback(text)">Я прочитав(-ла) <span>✓</span></button>
-            </div>
-          </article>
+        <app-sentence-practice
+          *ngIf="practiceMode === 'sentences'"
+          [language]="learningLanguage"
+          [level]="settings.level()" />
+        <app-sentence-practice
+          *ngIf="practiceMode === 'quiz'"
+          mode="quiz"
+          [language]="learningLanguage"
+          [level]="settings.level()" />
         </div>
       </ng-container>
+
     </section>
 
-    <section class="quote-banner">
-      <span class="quote-mark">“</span>
-      <div><p>{{ encouragement }}</p><small>Ти робиш більше, ніж здається. Так тримати!</small></div>
-      <span class="quote-flower" aria-hidden="true">✳</span>
-    </section>
   </main>
 
   <footer class="footer">

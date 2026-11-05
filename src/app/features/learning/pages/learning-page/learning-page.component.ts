@@ -14,7 +14,6 @@ import type {
   DailyGoal,
   LearningLanguage,
   Phrase,
-  ReadingText,
   WordCard,
 } from '../../../../core/models/vocabulary.model';
 import { LearningCalendarComponent } from '../../components/learning-calendar/learning-calendar.component';
@@ -25,12 +24,14 @@ import {
 import { LearningCalendarService } from '../../services/learning-calendar.service';
 import { LearningProgressService } from '../../services/learning-progress.service';
 import { LearningSettingsService } from '../../services/learning-settings.service';
-import { phrasesFor, readingTextsFor } from '../../data/learning-materials';
+import { phrasesFor } from '../../data/learning-materials';
 import { vocabulary } from '../../data/vocabulary';
 import { VocabularyCardComponent } from '../../../../shared/components/vocabulary-card/vocabulary-card.component';
 import { LearningWordCardComponent } from '../../components/learning-word-card/learning-word-card.component';
+import { SentencePracticeComponent } from '../../components/sentence-practice/sentence-practice.component';
 
-type LearningTab = 'words' | 'phrases' | 'texts';
+type LearningTab = 'words' | 'practice';
+type PracticeMode = 'phrases' | 'sentences' | 'quiz';
 
 function wordCountLabel(count: number, grammaticalCase: 'nominative' | 'genitive'): string {
   const lastTwoDigits = count % 100;
@@ -55,6 +56,7 @@ function wordCountLabel(count: number, grammaticalCase: 'nominative' | 'genitive
     LearningCalendarComponent,
     LearningWordCardComponent,
     VocabularyCardComponent,
+    SentencePracticeComponent,
     WordPaginationComponent,
   ],
   templateUrl: './learning-page.component.html',
@@ -63,11 +65,6 @@ function wordCountLabel(count: number, grammaticalCase: 'nominative' | 'genitive
 export class LearningPageComponent {
   readonly words = vocabulary;
   readonly favoritesFilter = 'Обране';
-  readonly categories = [
-    'Усі слова',
-    this.favoritesFilter,
-    ...new Set(vocabulary.map((word) => word.category)),
-  ];
   readonly encouragements = [
     'Чудова робота! Кожен крок наближає тебе до мети.',
     'Супер! Це слово вже у твоєму активному словнику.',
@@ -82,18 +79,27 @@ export class LearningPageComponent {
   private readonly wordIds = new Set(vocabulary.map((word) => word.id));
 
   private readonly activeTabSignal = signal<LearningTab>('words');
+  private readonly practiceModeSignal = signal<PracticeMode>('phrases');
+  practiceModeChosen = false;
   private readonly activeCategorySignal = signal('Усі слова');
   private readonly searchQuerySignal = signal('');
   private readonly wordPageSizeSignal = signal<WordPageSize>(10);
   private readonly wordPageSignal = signal(1);
   private readonly showAnswerSignal = signal(false);
   private readonly feedbackSignal = signal('');
-  private readonly openTextSignal = signal(-1);
   private readonly wordIndexSignal = signal(0);
   private readonly currentWordSignal = signal<WordCard>(vocabulary.find((word) => word.level === 'A2')!);
 
   get selectedWords(): WordCard[] {
     return vocabulary.filter((word) => word.level === this.settings.level());
+  }
+
+  get categories(): string[] {
+    return [
+      'Усі слова',
+      this.favoritesFilter,
+      ...new Set(this.selectedWords.map((word) => word.category)),
+    ];
   }
 
   private readonly visibleWordsList = computed(() => {
@@ -140,6 +146,29 @@ export class LearningPageComponent {
   }
   set activeTab(value: LearningTab) {
     this.activeTabSignal.set(value);
+  }
+
+  get practiceMode(): PracticeMode {
+    return this.practiceModeSignal();
+  }
+
+  setPracticeMode(mode: PracticeMode): void {
+    const changed = this.practiceMode !== mode;
+    this.practiceModeChosen = true;
+    if (changed) {
+      this.practiceModeSignal.set(mode);
+      this.feedbackSignal.set('');
+    }
+    if (isPlatformBrowser(this.platformId)) {
+      requestAnimationFrame(() => {
+        const content = document.getElementById('practice-content');
+        if (!content) return;
+        const bounds = content.getBoundingClientRect();
+        if (bounds.bottom <= window.innerHeight && bounds.top >= 0) return;
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        content.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'nearest' });
+      });
+    }
   }
 
   get learningLanguage(): LearningLanguage {
@@ -227,13 +256,6 @@ export class LearningPageComponent {
     return this.progress.showDailyGoalCelebration();
   }
 
-  get openText(): number {
-    return this.openTextSignal();
-  }
-  set openText(value: number) {
-    this.openTextSignal.set(value);
-  }
-
   get wordIndex(): number {
     return this.wordIndexSignal();
   }
@@ -247,10 +269,6 @@ export class LearningPageComponent {
 
   get phrases(): Phrase[] {
     return phrasesFor(this.learningLanguage);
-  }
-
-  get readingTexts(): ReadingText[] {
-    return readingTextsFor(this.learningLanguage);
   }
 
   get learnedCount(): number {
@@ -279,11 +297,29 @@ export class LearningPageComponent {
   }
 
   get todayCount(): number {
-    return this.progress.todayCount();
+    const todayKey = this.calendarService.dateKey(new Date());
+    return (this.levelDailyProgress[todayKey] ?? []).length;
   }
 
   get streak(): number {
-    return this.progress.streak();
+    return this.calendarService.getStreak(this.levelDailyProgress);
+  }
+
+  get levelDailyProgress(): Record<string, string[]> {
+    const levelIds = this.levelWordIds;
+    return Object.fromEntries(
+      Object.entries(this.dailyProgress).map(([date, ids]) => [
+        date,
+        [...new Set(ids.filter((id) => levelIds.has(id)))],
+      ]),
+    );
+  }
+
+  levelWordCountLabel(level: 'A2' | 'B1'): string {
+    return wordCountLabel(
+      vocabulary.filter((word) => word.level === level).length,
+      'nominative',
+    );
   }
 
   get progressMessage(): string {
@@ -334,6 +370,7 @@ export class LearningPageComponent {
 
   setLearningLevel(level: 'A2' | 'B1'): void {
     if (this.settings.level() === level) return;
+    this.progress.continueAfterDailyGoal();
     this.settings.setLevel(level);
     this.wordPageSignal.set(1);
     this.activeCategorySignal.set('Усі слова');
@@ -411,7 +448,7 @@ export class LearningPageComponent {
 
   markLearned(word: WordCard): void {
     const isCurrentWord = word.id === this.currentWord.id;
-    const result = this.progress.markLearned(word.id, this.dailyGoal);
+    const result = this.progress.markLearned(word.id, this.dailyGoal, this.levelWordIds);
     if (result === 'already') {
       if (isCurrentWord) {
         this.advanceToNextUnlearnedWord(this.wordIndex);
@@ -448,16 +485,8 @@ export class LearningPageComponent {
     this.showAnswerSignal.update((value) => !value);
   }
 
-  toggleText(index: number): void {
-    this.openTextSignal.set(this.openText === index ? -1 : index);
-  }
-
   showPhraseFeedback(phrase: Phrase): void {
     this.feedbackSignal.set(`Чудово! Повтори вголос: «${phrase.text}»`);
-  }
-
-  showTextFeedback(text: ReadingText): void {
-    this.feedbackSignal.set(`Ти прочитав(-ла) текст «${text.title}» — чудовий крок!`);
   }
 
   private setCurrentWord(index: number): void {
@@ -476,6 +505,10 @@ export class LearningPageComponent {
 
   private nextUnlearnedWord(): WordCard | undefined {
     return this.selectedWords.find((word) => !this.learned.has(word.id));
+  }
+
+  private get levelWordIds(): Set<string> {
+    return new Set(this.selectedWords.map((word) => word.id));
   }
 
   private advanceToNextUnlearnedWord(currentIndex: number): void {

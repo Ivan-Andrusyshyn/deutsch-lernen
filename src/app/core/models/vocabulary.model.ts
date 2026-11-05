@@ -1,4 +1,4 @@
-export type WordKind = 'noun' | 'verb' | 'adjective';
+export type WordKind = 'noun' | 'verb' | 'adjective' | 'adverb' | 'conjunction' | 'preposition';
 export type LearningLanguage = 'de' | 'en';
 export type AppTheme = 'light' | 'dark';
 export type DailyGoal = 3 | 5 | 10 | 15;
