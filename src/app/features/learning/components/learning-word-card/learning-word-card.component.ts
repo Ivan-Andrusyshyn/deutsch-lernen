@@ -30,6 +30,7 @@ export class LearningWordCardComponent implements OnChanges, OnDestroy {
   @Input({ required: true }) position = 1;
   @Input({ required: true }) totalWords = 1;
   @Input({ required: true }) showAnswer = false;
+  @Input() alreadyLearned = false;
 
   @Output() answerToggled = new EventEmitter<void>();
   @Output() learned = new EventEmitter<WordCard>();

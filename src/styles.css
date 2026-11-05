@@ -440,6 +440,30 @@ summary:focus-visible {
   color: #fff;
 }
 
+.app-shell .profile-save-note {
+  max-width: 390px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 12px 0 0;
+  color: #758078;
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.app-shell .profile-save-note > span {
+  width: 17px;
+  height: 17px;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: #edf4e8;
+  color: #326f55;
+  font-size: 10px;
+  font-weight: 800;
+}
+
 .app-shell .language-option-text {
   display: flex;
   min-width: 0;
@@ -598,6 +622,14 @@ summary:focus-visible {
   text-align: center;
 }
 
+.app-shell .word-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
 .app-shell .word-category {
   border-radius: 999px;
   padding: 6px 11px;
@@ -605,6 +637,19 @@ summary:focus-visible {
   color: #687a5d;
   font-size: 10px;
   font-weight: 600;
+}
+
+.app-shell .learned-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid #d8e7d2;
+  border-radius: 999px;
+  padding: 5px 9px;
+  background: #f4f8f0;
+  color: #3d7049;
+  font-size: 9px;
+  font-weight: 700;
 }
 
 .app-shell .daily-word h3 {
@@ -811,6 +856,13 @@ summary:focus-visible {
 
   .app-shell .learning-language-picker {
     max-width: 355px;
+  }
+
+  .app-shell .profile-save-note {
+    max-width: 355px;
+    margin-top: 10px;
+    padding-right: 6px;
+    font-size: 9px;
   }
 
   .app-shell .learning-language-switch {
@@ -1081,6 +1133,12 @@ summary:focus-visible {
   color: #c0d8b7;
 }
 
+.app-shell.theme-dark .learned-status {
+  border-color: #4b6a50;
+  background: #293b2e;
+  color: #b9dfb5;
+}
+
 .app-shell.theme-dark .daily-word .word-hint {
   color: #d7e8d3;
 }
@@ -1154,6 +1212,15 @@ summary:focus-visible {
   border-color: #83b995;
   background: #202a23;
   color: #c5d2c7;
+}
+
+.app-shell.theme-dark .profile-save-note {
+  color: #aab8ad;
+}
+
+.app-shell.theme-dark .profile-save-note > span {
+  background: #293b2e;
+  color: #a6d2a1;
 }
 
 .app-shell.theme-dark .theme-toggle:hover,

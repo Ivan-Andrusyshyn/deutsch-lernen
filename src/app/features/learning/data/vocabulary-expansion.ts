@@ -268,6 +268,7 @@ export const vocabularyExpansion: WordCard[] = nounForms
       kind: 'noun',
       phrase: wordForm,
       example: `Ich lerne das Wort "${wordForm}".`,
+      level: 'A2',
     });
 
     return [

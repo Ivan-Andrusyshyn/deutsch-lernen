@@ -15,7 +15,7 @@
         <span aria-hidden="true">{{ theme === 'light' ? '☾' : '☀' }}</span>
         <span class="theme-toggle-label">{{ theme === 'light' ? 'Темна' : 'Світла' }}</span>
       </button>
-      <div class="level-pill"><span>✦</span> {{ learningLanguage === 'de' ? 'Німецька' : 'Англійська' }}</div>
+      <div class="level-pill"><span>✦</span> {{ learningLanguageName }} · {{ settings.level() }}</div>
     </div>
   </header>
 
@@ -25,7 +25,7 @@
         <p class="eyebrow">НІМЕЦЬКА ТА АНГЛІЙСЬКА — В ОДНОМУ МІСЦІ</p>
         <h1>Дві мови,<br /><span>твій темп.</span></h1>
         <p class="hero-description">
-          Обери мову, яку вивчаєш зараз. Український інтерфейс і категорії залишаються незмінними, а прогрес кожної мови зберігається окремо.
+          Обери мову та рівень, який вивчаєш зараз. Слова й прогрес підлаштуються під твій рівень.
         </p>
         <div class="learning-language-picker" role="group" aria-label="Обери мову навчання">
           <span class="language-picker-label">ЗАРАЗ ВИВЧАЮ</span>
@@ -40,6 +40,21 @@
             </button>
           </div>
         </div>
+        <div class="learning-language-picker level-picker" role="group" aria-label="Обери рівень навчання">
+          <span class="language-picker-label">МІЙ РІВЕНЬ</span>
+          <div class="learning-language-switch">
+            <button type="button" [class.active]="settings.level() === 'A2'" [attr.aria-pressed]="settings.level() === 'A2'" (click)="setLearningLevel('A2')">
+              <span class="language-code">A2</span><span class="language-option-text"><strong>Базовий</strong><small>1000 слів</small></span>
+            </button>
+            <button type="button" [class.active]="settings.level() === 'B1'" [attr.aria-pressed]="settings.level() === 'B1'" (click)="setLearningLevel('B1')">
+              <span class="language-code">B1</span><span class="language-option-text"><strong>Середній</strong><small>51 слово</small></span>
+            </button>
+          </div>
+        </div>
+        <p class="profile-save-note" role="note">
+          <span aria-hidden="true">✓</span>
+          Результати німецької й англійської зберігаються окремо. Перемикання рівня їх не стирає.
+        </p>
         <button class="primary-button hero-button" type="button" (click)="startLearning()">
           <span>Почати навчання</span><span aria-hidden="true">→</span>
         </button>
@@ -75,7 +90,7 @@
         <span [style.width.%]="progressPercent"></span>
       </div>
       <div class="progress-foot">
-        <span><strong>{{ learnedCount }}</strong> із {{ words.length }} слів вивчено</span>
+          <span><strong>{{ selectedLearnedCount }}</strong> із {{ selectedWordCountGenitive }} вивчено</span>
         <label class="daily-goal-control">
           <span>Мета на день</span>
           <select [value]="dailyGoal" (change)="setDailyGoal($event)" aria-label="Денна мета слів">
@@ -85,9 +100,9 @@
         <span>{{ progressPercent }}%</span>
       </div>
       <div class="stats-row">
-        <div class="stat-item"><span class="stat-icon peach">✦</span><span><strong>{{ learnedCount }}</strong><small>вивчено слів</small></span></div>
+        <div class="stat-item"><span class="stat-icon peach">✦</span><span><strong>{{ selectedLearnedCount }}</strong><small>вивчено слів</small></span></div>
         <div class="stat-item"><span class="stat-icon mint">◷</span><span><strong>{{ todayCount }} / {{ dailyGoal }}</strong><small>мета на сьогодні</small></span></div>
-        <div class="stat-item"><span class="stat-icon lilac">♡</span><span><strong>{{ favorites.size }}</strong><small>в обраному</small></span></div>
+        <div class="stat-item"><span class="stat-icon lilac">♡</span><span><strong>{{ selectedFavoriteCount }}</strong><small>в обраному · {{ settings.level() }}</small></span></div>
       </div>
       <app-learning-calendar [dailyProgress]="dailyProgress" [words]="words" [language]="learningLanguage" />
     </section>
@@ -98,11 +113,11 @@
           <p class="section-kicker">ТВОЯ МІНІПРАКТИКА</p>
           <h2>Що вивчатимемо?</h2>
         </div>
-        <span class="total-pill">{{ words.length }} слів · {{ learningLanguageName }}</span>
+        <span class="total-pill">{{ selectedWordCountLabel }} · {{ learningLanguageName }} · {{ settings.level() }}</span>
       </div>
 
       <nav class="tab-list" role="tablist" aria-label="Обрати матеріал">
-        <button type="button" role="tab" [attr.aria-selected]="activeTab === 'words'" [class.active]="activeTab === 'words'" (click)="selectTab('words')"><span>✦</span> Слова <span class="tab-count">{{ words.length }}</span></button>
+        <button type="button" role="tab" [attr.aria-selected]="activeTab === 'words'" [class.active]="activeTab === 'words'" (click)="selectTab('words')"><span>✦</span> Слова <span class="tab-count">{{ selectedWords.length }}</span></button>
         <button type="button" role="tab" [attr.aria-selected]="activeTab === 'phrases'" [class.active]="activeTab === 'phrases'" (click)="selectTab('phrases')"><span>〝</span> Фрази <span class="tab-count">{{ phrases.length }}</span></button>
         <button type="button" role="tab" [attr.aria-selected]="activeTab === 'texts'" [class.active]="activeTab === 'texts'" (click)="selectTab('texts')"><span>▤</span> Тексти <span class="tab-count">{{ readingTexts.length }}</span></button>
       </nav>
@@ -118,8 +133,9 @@
           [word]="currentWord"
           [language]="learningLanguage"
           [position]="wordIndex + 1"
-          [totalWords]="words.length"
+          [totalWords]="selectedWords.length"
           [showAnswer]="showAnswer"
+          [alreadyLearned]="isLearned(currentWord)"
           (answerToggled)="toggleAnswer()"
           (learned)="markLearned($event)"
           (previous)="showPreviousWord()"
@@ -185,7 +201,7 @@
       <ng-container *ngIf="activeTab === 'texts'">
         <div class="content-intro">
           <h3>Читаємо й розуміємо</h3>
-          <p>Короткі історії рівня A2 з перекладом і запитаннями для самоперевірки.</p>
+          <p>Короткі історії з перекладом і запитаннями для самоперевірки.</p>
         </div>
         <div class="reading-list">
           <article class="reading-card" *ngFor="let text of readingTexts; let i = index">

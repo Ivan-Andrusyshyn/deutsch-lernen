@@ -834,7 +834,7 @@ const verbExamples: Record<string, string> = {
   verlieren: 'Ich verliere oft meine Schlüssel.',
 };
 
-const vocabularyWithoutEnglish: Omit<WordCard, 'translationEnglish'>[] = [
+const vocabularyWithoutEnglish: Omit<WordCard, 'translationEnglish' | 'level'>[] = [
   ...nouns.map(([word, translation, category], index) => {
     const article = word.split(' ')[0];
     const noun = word.slice(article.length + 1);
@@ -918,18 +918,88 @@ const originalVocabulary: WordCard[] = vocabularyWithoutEnglish.map((word) => {
   if (!translationEnglish) {
     throw new Error(`Missing English vocabulary translation for "${word.word}".`);
   }
-  return { ...word, translationEnglish };
+  return { ...word, translationEnglish, level: 'A2' as const };
 });
 
-export const vocabulary: WordCard[] = [...originalVocabulary, ...vocabularyExpansion];
+const b1Entries: Array<[string, string, string, string, string]> = [
+  ['die Herausforderung', 'challenge', 'виклик', 'mit einer Herausforderung umgehen', 'Die Herausforderung war größer als erwartet.'],
+  ['die Voraussetzung', 'precondition', 'передумова', 'eine wichtige Voraussetzung', 'Gute Planung ist eine wichtige Voraussetzung.'],
+  ['die Auswirkung', 'effect', 'вплив', 'Auswirkungen auf die Umwelt', 'Die Entscheidung hat große Auswirkungen.'],
+  ['die Entwicklung', 'development', 'розвиток', 'eine positive Entwicklung', 'Die Entwicklung der Stadt geht schnell voran.'],
+  ['die Erfahrung', 'experience', 'досвід', 'wertvolle Erfahrung sammeln', 'Im Ausland sammelte sie wertvolle Erfahrungen.'],
+  ['die Fähigkeit', 'ability', 'здатність', 'eine Fähigkeit verbessern', 'Kommunikation ist eine wichtige Fähigkeit.'],
+  ['die Gelegenheit', 'opportunity', 'нагода', 'eine Gelegenheit nutzen', 'Ich nutzte die Gelegenheit für ein Gespräch.'],
+  ['die Entscheidung', 'decision', 'рішення', 'eine Entscheidung treffen', 'Wir müssen heute eine Entscheidung treffen.'],
+  ['die Verantwortung', 'responsibility', 'відповідальність', 'Verantwortung übernehmen', 'Sie übernimmt Verantwortung für das Projekt.'],
+  ['die Bedingung', 'condition', 'умова', 'unter dieser Bedingung', 'Unter dieser Bedingung können wir anfangen.'],
+  ['der Zusammenhang', 'connection', 'зв’язок', 'im Zusammenhang mit', 'Der Zusammenhang ist nicht sofort klar.'],
+  ['der Vorschlag', 'suggestion', 'пропозиція', 'einen Vorschlag machen', 'Dein Vorschlag klingt vernünftig.'],
+  ['der Unterschied', 'difference', 'різниця', 'einen Unterschied erkennen', 'Zwischen den Angeboten gibt es einen Unterschied.'],
+  ['der Eindruck', 'impression', 'враження', 'einen guten Eindruck machen', 'Das Hotel machte einen guten Eindruck.'],
+  ['der Fortschritt', 'progress', 'прогрес', 'Fortschritte machen', 'Mit täglicher Übung macht er Fortschritte.'],
+  ['der Aspekt', 'aspect', 'аспект', 'einen wichtigen Aspekt erklären', 'Die Lehrerin erklärte einen wichtigen Aspekt.'],
+  ['die Mehrheit', 'majority', 'більшість', 'die Mehrheit der Menschen', 'Die Mehrheit stimmte dem Plan zu.'],
+  ['die Möglichkeit', 'possibility', 'можливість', 'eine Möglichkeit finden', 'Wir suchen eine bessere Möglichkeit.'],
+  ['die Meinung', 'opinion', 'думка', 'seine Meinung äußern', 'Er äußerte seine Meinung offen.'],
+  ['die Anforderung', 'requirement', 'вимога', 'eine Anforderung erfüllen', 'Sie erfüllt alle Anforderungen für die Stelle.'],
+  ['der Bereich', 'area', 'сфера', 'im öffentlichen Bereich', 'Sie arbeitet im Bereich Kommunikation.'],
+  ['der Beitrag', 'contribution', 'внесок', 'einen Beitrag leisten', 'Jeder kann einen Beitrag leisten.'],
+  ['der Einfluss', 'influence', 'вплив', 'Einfluss auf etwas haben', 'Freunde haben großen Einfluss auf Jugendliche.'],
+  ['der Zweck', 'purpose', 'мета', 'zu diesem Zweck', 'Zu diesem Zweck wurde eine Gruppe gegründet.'],
+  ['die Gesellschaft', 'society', 'суспільство', 'die moderne Gesellschaft', 'Die Gesellschaft verändert sich ständig.'],
+  ['die Umgebung', 'surroundings', 'оточення', 'in einer ruhigen Umgebung', 'Sie lernt gern in einer ruhigen Umgebung.'],
+  ['die Unterstützung', 'support', 'підтримка', 'Unterstützung erhalten', 'Die Familie erhielt Unterstützung von der Gemeinde.'],
+  ['der Zugang', 'access', 'доступ', 'Zugang zu Informationen', 'Alle Mitarbeitenden haben Zugang zu den Informationen.'],
+  ['die Maßnahme', 'measure', 'захід', 'eine Maßnahme ergreifen', 'Die Stadt ergriff Maßnahmen gegen den Lärm.'],
+  ['die Regel', 'rule', 'правило', 'eine Regel beachten', 'Regelmäßiges Lernen wird mit der Zeit zur guten Regel.'],
+  ['sich bewerben', 'to apply', 'подаватися', 'sich um eine Stelle bewerben', 'Er bewirbt sich um eine Stelle in Berlin.'],
+  ['sich entscheiden', 'to decide', 'вирішувати', 'sich für etwas entscheiden', 'Sie entschied sich für ein Studium.'],
+  ['teilnehmen', 'to participate', 'брати участь', 'an einem Kurs teilnehmen', 'Viele Menschen nehmen an dem Kurs teil.'],
+  ['vermeiden', 'to avoid', 'уникати', 'einen Fehler vermeiden', 'Mit guter Vorbereitung kann man Fehler vermeiden.'],
+  ['ermöglichen', 'to enable', 'уможливлювати', 'jemandem etwas ermöglichen', 'Das Stipendium ermöglicht ihr ein Studium.'],
+  ['berücksichtigen', 'to consider', 'враховувати', 'alle Aspekte berücksichtigen', 'Wir müssen die Kosten berücksichtigen.'],
+  ['behaupten', 'to claim', 'стверджувати', 'etwas behaupten', 'Er behauptet, die Nachricht nicht gelesen zu haben.'],
+  ['beeinflussen', 'to influence', 'впливати', 'eine Entscheidung beeinflussen', 'Das Wetter beeinflusst unsere Pläne.'],
+  ['sich entwickeln', 'to develop', 'розвиватися', 'sich schnell entwickeln', 'Die Situation entwickelt sich positiv.'],
+  ['vergleichen', 'to compare', 'порівнювати', 'Preise miteinander vergleichen', 'Vor dem Kauf vergleicht sie die Preise.'],
+  ['vorschlagen', 'to suggest', 'пропонувати', 'eine Lösung vorschlagen', 'Der Kollege schlug eine andere Lösung vor.'],
+  ['zuverlässig', 'reliable', 'надійний', 'ein zuverlässiger Partner', 'Sie ist eine zuverlässige Mitarbeiterin.'],
+  ['unabhängig', 'independent', 'незалежний', 'finanziell unabhängig', 'Er möchte finanziell unabhängig sein.'],
+  ['notwendig', 'necessary', 'необхідний', 'notwendige Schritte', 'Für die Anmeldung sind notwendige Unterlagen erforderlich.'],
+  ['wahrscheinlich', 'probably', 'ймовірно', 'höchstwahrscheinlich', 'Wahrscheinlich kommt der Zug heute später.'],
+  ['trotzdem', 'nevertheless', 'попри це', 'trotzdem weitermachen', 'Es regnete, trotzdem gingen wir spazieren.'],
+  ['währenddessen', 'meanwhile', 'тим часом', 'währenddessen warten', 'Sie kochte, währenddessen deckte er den Tisch.'],
+  ['außerdem', 'in addition', 'крім того', 'außerdem erwähnen', 'Außerdem sollten wir die Frist beachten.'],
+  ['deshalb', 'therefore', 'тому', 'deshalb absagen', 'Der Termin wurde verschoben, deshalb komme ich später.'],
+  ['obwohl', 'although', 'хоча', 'obwohl es schwierig ist', 'Obwohl es schwierig war, gab sie nicht auf.'],
+  ['die Zuverlässigkeit', 'reliability', 'надійність', 'Zuverlässigkeit zeigen', 'Zuverlässigkeit ist im Beruf sehr wichtig.'],
+];
 
-const expectedVocabularySize = 1000;
+const b1Vocabulary: WordCard[] = b1Entries.map(([word, translationEnglish, translation, phrase, example], index) => ({
+  id: `b1-${index + 1}`,
+  word,
+  translation,
+  translationEnglish,
+  category: 'Розвиток і суспільство',
+  kind: /^(sich |teilnehmen|vermeiden|ermöglichen|berücksichtigen|behaupten|beeinflussen|vergleichen|vorschlagen)/.test(word) ? 'verb' : /^(zuverlässig|unabhängig|notwendig|wahrscheinlich)$/.test(word) ? 'adjective' : 'noun',
+  phrase,
+  example,
+  level: 'B1',
+}));
+
+export const vocabulary: WordCard[] = [
+  ...originalVocabulary,
+  ...vocabularyExpansion.map((word) => ({ ...word, level: 'A2' as const })),
+  ...b1Vocabulary,
+];
+
+const a2Vocabulary = vocabulary.filter((word) => word.level === 'A2');
 if (
-  vocabulary.length !== expectedVocabularySize ||
-  new Set(vocabulary.map((word) => word.word)).size !== expectedVocabularySize ||
-  new Set(vocabulary.map((word) => word.translationEnglish)).size !== expectedVocabularySize
+  a2Vocabulary.length !== 1000 ||
+  new Set(a2Vocabulary.map((word) => word.id)).size !== 1000 ||
+  b1Vocabulary.length !== b1Entries.length
 ) {
-  throw new Error(`Expected ${expectedVocabularySize} unique German-English vocabulary cards.`);
+  throw new Error('Expected 1000 A2 cards and a complete B1 vocabulary set.');
 }
 
 export { germanPhrases as phrases, germanReadingTexts as readingTexts } from './learning-materials';

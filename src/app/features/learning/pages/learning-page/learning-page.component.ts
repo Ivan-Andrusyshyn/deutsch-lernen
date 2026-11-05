@@ -32,6 +32,20 @@ import { LearningWordCardComponent } from '../../components/learning-word-card/l
 
 type LearningTab = 'words' | 'phrases' | 'texts';
 
+function wordCountLabel(count: number, grammaticalCase: 'nominative' | 'genitive'): string {
+  const lastTwoDigits = count % 100;
+  const lastDigit = count % 10;
+  if (grammaticalCase === 'nominative') {
+    if (lastTwoDigits >= 11 && lastTwoDigits <= 14) return `${count} слів`;
+    if (lastDigit === 1) return `${count} слово`;
+    if (lastDigit >= 2 && lastDigit <= 4) return `${count} слова`;
+    return `${count} слів`;
+  }
+  if (lastTwoDigits >= 11 && lastTwoDigits <= 14) return `${count} слів`;
+  if (lastDigit >= 2 && lastDigit <= 4) return `${count} слова`;
+  return `${count} слів`;
+}
+
 @Component({
   selector: 'app-learning-page',
   standalone: true,
@@ -76,7 +90,11 @@ export class LearningPageComponent {
   private readonly feedbackSignal = signal('');
   private readonly openTextSignal = signal(-1);
   private readonly wordIndexSignal = signal(0);
-  private readonly currentWordSignal = signal<WordCard>(vocabulary[0]);
+  private readonly currentWordSignal = signal<WordCard>(vocabulary.find((word) => word.level === 'A2')!);
+
+  get selectedWords(): WordCard[] {
+    return vocabulary.filter((word) => word.level === this.settings.level());
+  }
 
   private readonly visibleWordsList = computed(() => {
     const query = this.searchQuerySignal().trim().toLocaleLowerCase('uk');
@@ -84,7 +102,7 @@ export class LearningPageComponent {
     const language = this.settings.language();
     const favorites = this.progress.favorites();
 
-    return this.words.filter((word) => {
+    return this.selectedWords.filter((word) => {
       const matchesCategory =
         category === 'Усі слова' ||
         (category === this.favoritesFilter
@@ -236,12 +254,28 @@ export class LearningPageComponent {
   }
 
   get learnedCount(): number {
-    return this.progress.learnedCount();
+    return this.selectedLearnedCount;
   }
 
   get progressPercent(): number {
-    if (this.learnedCount === 0) return 0;
-    return Math.max(1, Math.round((this.learnedCount / this.words.length) * 100));
+    if (this.selectedLearnedCount === 0) return 0;
+    return Math.max(1, Math.round((this.selectedLearnedCount / this.selectedWords.length) * 100));
+  }
+
+  get selectedLearnedCount(): number {
+    return this.selectedWords.filter((word) => this.learned.has(word.id)).length;
+  }
+
+  get selectedFavoriteCount(): number {
+    return this.selectedWords.filter((word) => this.favorites.has(word.id)).length;
+  }
+
+  get selectedWordCountLabel(): string {
+    return wordCountLabel(this.selectedWords.length, 'nominative');
+  }
+
+  get selectedWordCountGenitive(): string {
+    return wordCountLabel(this.selectedWords.length, 'genitive');
   }
 
   get todayCount(): number {
@@ -255,8 +289,8 @@ export class LearningPageComponent {
   get progressMessage(): string {
     const language = this.learningLanguageName.toLocaleLowerCase('uk');
     if (this.progressPercent === 100)
-      return `Усі ${this.words.length} слів ${language} вивчено — це неймовірно!`;
-    if (this.learnedCount === 0) return 'Почни з першого слова — у тебе все вийде!';
+      return `Усі ${this.selectedWordCountGenitive} ${language} вивчено — це неймовірно!`;
+    if (this.selectedLearnedCount === 0) return 'Почни з першого слова — у тебе все вийде!';
     if (this.todayCount >= this.dailyGoal) return 'Денну ціль виконано. Ти неймовірний(-а)!';
     return `Маленькі кроки щодня — і ${language} стане звичкою.`;
   }
@@ -295,6 +329,15 @@ export class LearningPageComponent {
     this.feedbackSignal.set('');
     this.settings.storageMessage.set('');
     this.progress.restore(language, this.wordIds);
+    this.resetCurrentWord();
+  }
+
+  setLearningLevel(level: 'A2' | 'B1'): void {
+    if (this.settings.level() === level) return;
+    this.settings.setLevel(level);
+    this.wordPageSignal.set(1);
+    this.activeCategorySignal.set('Усі слова');
+    this.searchQuerySignal.set('');
     this.resetCurrentWord();
   }
 
@@ -344,7 +387,7 @@ export class LearningPageComponent {
 
     const next = this.nextUnlearnedWord();
     if (next) {
-      this.setCurrentWord(this.words.indexOf(next));
+      this.setCurrentWord(this.selectedWords.indexOf(next));
     } else {
       this.setCurrentWord(0);
       this.feedbackSignal.set(
@@ -359,22 +402,26 @@ export class LearningPageComponent {
   }
 
   showPreviousWord(): void {
-    this.setCurrentWord((this.wordIndex - 1 + this.words.length) % this.words.length);
+    this.setCurrentWord((this.wordIndex - 1 + this.selectedWords.length) % this.selectedWords.length);
   }
 
   showNextWord(): void {
-    this.setCurrentWord((this.wordIndex + 1) % this.words.length);
+    this.setCurrentWord((this.wordIndex + 1) % this.selectedWords.length);
   }
 
   markLearned(word: WordCard): void {
     const isCurrentWord = word.id === this.currentWord.id;
     const result = this.progress.markLearned(word.id, this.dailyGoal);
     if (result === 'already') {
-      this.feedbackSignal.set('Це слово вже позначено як вивчене. Чудова робота!');
+      if (isCurrentWord) {
+        this.advanceToNextUnlearnedWord(this.wordIndex);
+      } else {
+        this.feedbackSignal.set('Це слово вже позначено як вивчене.');
+      }
       return;
     }
     if (isCurrentWord) {
-      this.setCurrentWord((this.wordIndex + 1) % this.words.length);
+      this.advanceToNextUnlearnedWord(this.wordIndex);
     }
     this.feedbackSignal.set(this.encouragement);
     this.progress.save(this.learningLanguage);
@@ -415,19 +462,30 @@ export class LearningPageComponent {
 
   private setCurrentWord(index: number): void {
     this.wordIndexSignal.set(index);
-    this.currentWordSignal.set(this.words[index]);
+    this.currentWordSignal.set(this.selectedWords[index]);
     this.showAnswerSignal.set(false);
     this.feedbackSignal.set('');
   }
 
   private resetCurrentWord(): void {
-    const next = this.nextUnlearnedWord() ?? this.words[0];
+    const next = this.nextUnlearnedWord() ?? this.selectedWords[0];
     this.currentWordSignal.set(next);
-    this.wordIndexSignal.set(this.words.indexOf(next));
+    this.wordIndexSignal.set(this.selectedWords.indexOf(next));
     this.showAnswerSignal.set(false);
   }
 
   private nextUnlearnedWord(): WordCard | undefined {
-    return this.words.find((word) => !this.learned.has(word.id));
+    return this.selectedWords.find((word) => !this.learned.has(word.id));
+  }
+
+  private advanceToNextUnlearnedWord(currentIndex: number): void {
+    const words = this.selectedWords;
+    for (let offset = 1; offset <= words.length; offset += 1) {
+      const nextIndex = (currentIndex + offset) % words.length;
+      if (!this.learned.has(words[nextIndex].id)) {
+        this.setCurrentWord(nextIndex);
+        return;
+      }
+    }
   }
 }

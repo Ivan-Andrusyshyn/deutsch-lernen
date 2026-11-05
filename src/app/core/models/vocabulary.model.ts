@@ -2,6 +2,7 @@ export type WordKind = 'noun' | 'verb' | 'adjective';
 export type LearningLanguage = 'de' | 'en';
 export type AppTheme = 'light' | 'dark';
 export type DailyGoal = 3 | 5 | 10 | 15;
+export type LearningLevel = 'A2' | 'B1';
 
 export interface WordCard {
   id: string;
@@ -12,6 +13,7 @@ export interface WordCard {
   kind: WordKind;
   phrase: string;
   example: string;
+  level: LearningLevel;
 }
 
 export interface Phrase {

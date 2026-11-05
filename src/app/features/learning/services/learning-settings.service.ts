@@ -1,11 +1,12 @@
 import { Injectable, Inject, PLATFORM_ID, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import type { AppTheme, DailyGoal, LearningLanguage } from '../../../core/models/vocabulary.model';
+import type { AppTheme, DailyGoal, LearningLanguage, LearningLevel } from '../../../core/models/vocabulary.model';
 
 export interface SavedSettings {
   learningLanguage: LearningLanguage;
   theme: AppTheme;
   dailyGoal: DailyGoal;
+  learningLevel: LearningLevel;
 }
 
 const SETTINGS_KEY = 'wortzeit-settings-v1';
@@ -17,6 +18,7 @@ export class LearningSettingsService {
   readonly language = signal<LearningLanguage>('de');
   readonly theme = signal<AppTheme>('light');
   readonly dailyGoal = signal<DailyGoal>(5);
+  readonly level = signal<LearningLevel>('A2');
   readonly storageMessage = signal('');
   readonly dailyGoalOptions = DAILY_GOALS;
 
@@ -50,6 +52,7 @@ export class LearningSettingsService {
         return;
       }
       this.language.set(settings.learningLanguage);
+      this.level.set(settings.learningLevel === 'B1' ? 'B1' : 'A2');
       this.theme.set(settings.theme);
       this.dailyGoal.set(
         this.dailyGoalOptions.includes(settings.dailyGoal) ? settings.dailyGoal : 5,
@@ -69,6 +72,12 @@ export class LearningSettingsService {
   setLanguage(language: LearningLanguage): void {
     if (this.language() === language) return;
     this.language.set(language);
+    this.save();
+  }
+
+  setLevel(level: LearningLevel): void {
+    if (this.level() === level) return;
+    this.level.set(level);
     this.save();
   }
 
@@ -101,6 +110,7 @@ export class LearningSettingsService {
       learningLanguage: this.language(),
       theme: this.theme(),
       dailyGoal: this.dailyGoal(),
+      learningLevel: this.level(),
     };
 
     try {
@@ -141,6 +151,7 @@ export class LearningSettingsService {
     const settings = value as Partial<SavedSettings>;
     return (
       (settings.learningLanguage === 'de' || settings.learningLanguage === 'en') &&
+      (settings.learningLevel === undefined || settings.learningLevel === 'A2' || settings.learningLevel === 'B1') &&
       (settings.theme === 'light' || settings.theme === 'dark') &&
       (typeof settings.dailyGoal === 'number'
         ? DAILY_GOALS.includes(settings.dailyGoal as DailyGoal)

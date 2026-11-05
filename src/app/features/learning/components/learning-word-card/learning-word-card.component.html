@@ -17,7 +17,12 @@
   >
     <div #wordSlide class="word-slide">
       <div class="daily-word">
-        <span class="word-category">{{ word.category }}</span>
+        <div class="word-card-meta">
+          <span class="word-category">{{ word.category }}</span>
+          <span class="learned-status" *ngIf="alreadyLearned" aria-live="polite">
+            <span aria-hidden="true">✓</span> Уже вивчено
+          </span>
+        </div>
         <h3 [attr.lang]="language">{{ displayWord() }}</h3>
         <div class="translation-reveal" *ngIf="showAnswer" aria-live="polite">
           <span class="translation-label">Українською</span>
@@ -60,7 +65,8 @@
       Повторити пізніше
     </button>
     <button class="primary-button" type="button" (click)="learned.emit(word)">
-      Я запам’ятав(-ла) <span>✓</span>
+      {{ alreadyLearned ? "Вже вивчено · далі" : "Вивчив(-ла) · далі" }}
+      <span aria-hidden="true">→</span>
     </button>
     <span class="encouragement-mini">У тебе все вийде! <span>✦</span></span>
   </div>

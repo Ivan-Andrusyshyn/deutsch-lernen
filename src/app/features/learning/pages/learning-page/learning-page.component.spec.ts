@@ -1,17 +1,19 @@
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
-import { of } from 'rxjs';
-import { PixabayImageService } from '../../../../core/services/pixabay-image.service';
 import { LearningPageComponent } from './learning-page.component';
 import { phrases, readingTexts, vocabulary } from '../../data/vocabulary';
 
 describe('LearningPageComponent', () => {
   beforeEach(async () => {
+    [
+      'wortzeit-settings-v1',
+      'wortzeit-progress-de-v1',
+      'wortzeit-progress-en-v1',
+      'deutsch-kompass-settings-v1',
+      'deutsch-kompass-progress-v1',
+    ].forEach((key) => window.localStorage.removeItem(key));
+
     await TestBed.configureTestingModule({
       imports: [LearningPageComponent],
-      providers: [{
-        provide: PixabayImageService,
-        useValue: { findImage: () => of(null) },
-      }],
     }).compileComponents();
   });
 
@@ -50,7 +52,7 @@ describe('LearningPageComponent', () => {
     expect(app.visibleWords).toContain(word);
   });
 
-  it('updates the study language in the UI and keeps German-only materials out of English mode', () => {
+  it('updates the study language while keeping matching English materials available', () => {
     const fixture = TestBed.createComponent(LearningPageComponent);
     fixture.detectChanges();
 
@@ -61,8 +63,10 @@ describe('LearningPageComponent', () => {
     expect(compiled.querySelector('.daily-word h3')?.textContent?.trim()).toBe('the apartment');
     expect(compiled.querySelector('.vocab-translation')?.textContent?.trim()).toBe('квартира');
     expect(languageButton.getAttribute('aria-pressed')).toBe('true');
-    expect(compiled.querySelector('.english-mode-note')?.textContent).toContain('Фрази й тексти поки доступні лише в режимі німецької');
-    expect(compiled.querySelector('.tab-list')?.textContent).not.toContain('Фрази');
+    expect(compiled.querySelector('.tab-list')?.textContent).toContain('Фрази');
+    compiled.querySelectorAll<HTMLButtonElement>('.tab-list button')[1].click();
+    fixture.detectChanges();
+    expect(compiled.querySelectorAll('.phrase-card').length).toBeGreaterThan(0);
 
     const themeButton = compiled.querySelector('.theme-toggle') as HTMLButtonElement;
     themeButton.click();
@@ -78,7 +82,7 @@ describe('LearningPageComponent', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('.word-card-position')?.textContent).toContain('Картка 1 з 1000');
     expect(compiled.querySelector('.hidden-hint')?.textContent).toContain('Згадай значення');
-    expect(compiled.querySelector('.daily-actions .primary-button')?.textContent).toContain('Я запам’ятав(-ла)');
+    expect(compiled.querySelector('.daily-actions .primary-button')?.textContent).toContain('Вивчив(-ла) · далі');
     expect(compiled.querySelector('.slider-button-label')?.textContent).toContain('Назад');
     expect(compiled.querySelectorAll('.slider-button-label')[1]?.textContent).toContain('Далі');
 
@@ -88,19 +92,23 @@ describe('LearningPageComponent', () => {
     expect(compiled.querySelector('.translation-reveal .word-hint')?.textContent).toContain('квартира');
   });
 
-  it('loads the learning-card photo with the English word', fakeAsync(() => {
-    const imageService = TestBed.inject(PixabayImageService);
-    const findImage = spyOn(imageService, 'findImage').and.returnValue(of(null));
+  it('switches levels and limits words, card navigation, and progress to the selected set', () => {
     const fixture = TestBed.createComponent(LearningPageComponent);
     fixture.detectChanges();
-    tick(0);
-    fixture.detectChanges();
+    const app = fixture.componentInstance;
+    const element = fixture.nativeElement as HTMLElement;
 
-    expect(findImage).toHaveBeenCalledWith(vocabulary[0].translationEnglish);
-    expect((fixture.nativeElement as HTMLElement).querySelector('.word-photo')?.textContent)
-      .toContain(vocabulary[0].translationEnglish);
-    fixture.destroy();
-  }));
+    expect(app.selectedWords.length).toBe(1000);
+    expect(app.selectedWords.every((word) => word.level === 'A2')).toBeTrue();
+    element.querySelector<HTMLButtonElement>('.level-picker button:nth-child(2)')?.click();
+    fixture.detectChanges();
+    expect(app.selectedWords.length).toBe(51);
+    expect(app.selectedWords.every((word) => word.level === 'B1')).toBeTrue();
+    expect(app.currentWord.level).toBe('B1');
+    expect(element.querySelector('.word-card-position')?.textContent).toContain('Картка 1 з 51');
+    expect(app.visibleWords.every((word) => word.level === 'B1')).toBeTrue();
+    expect(app.wordPage).toBe(1);
+  });
 
   it('paginates the vocabulary and applies the selected page size', () => {
     const fixture = TestBed.createComponent(LearningPageComponent);
@@ -127,7 +135,7 @@ describe('LearningPageComponent', () => {
     fixture.destroy();
   });
 
-  it('persists and restores study language and theme settings', fakeAsync(() => {
+  it('persists and restores study language, level, theme, and daily goal settings', fakeAsync(() => {
     window.localStorage.removeItem('wortzeit-settings-v1');
     window.localStorage.removeItem('deutsch-kompass-settings-v1');
     const fixture = TestBed.createComponent(LearningPageComponent);
@@ -135,17 +143,22 @@ describe('LearningPageComponent', () => {
     tick(0);
 
     fixture.componentInstance.setLearningLanguage('en');
+    fixture.componentInstance.setLearningLevel('B1');
     fixture.componentInstance.toggleTheme();
 
     expect(JSON.parse(window.localStorage.getItem('wortzeit-settings-v1') ?? '{}')).toEqual({
       learningLanguage: 'en',
       theme: 'dark',
+      dailyGoal: 5,
+      learningLevel: 'B1',
     });
 
     const restoredFixture = TestBed.createComponent(LearningPageComponent);
     restoredFixture.detectChanges();
     tick(0);
     expect(restoredFixture.componentInstance.learningLanguage).toBe('en');
+    expect(restoredFixture.componentInstance.settings.level()).toBe('B1');
+    expect(restoredFixture.componentInstance.selectedWords.length).toBe(51);
     expect(restoredFixture.componentInstance.theme).toBe('dark');
     window.localStorage.removeItem('wortzeit-settings-v1');
     window.localStorage.removeItem('deutsch-kompass-settings-v1');
@@ -163,23 +176,65 @@ describe('LearningPageComponent', () => {
     const app = fixture.componentInstance;
 
     app.markLearned(vocabulary[0]);
+    app.toggleFavorite(vocabulary[0]);
     expect(app.learnedCount).toBe(1);
     app.setLearningLanguage('en');
     expect(app.learnedCount).toBe(0);
+    expect(app.todayCount).toBe(0);
+    expect(app.isLearned(vocabulary[0])).toBeFalse();
+    expect(app.isFavorite(vocabulary[0])).toBeFalse();
     app.markLearned(vocabulary[1]);
     expect(app.learnedCount).toBe(1);
 
     expect(JSON.parse(window.localStorage.getItem('wortzeit-progress-de-v1') ?? '{}').learned).toEqual([vocabulary[0].id]);
     expect(JSON.parse(window.localStorage.getItem('wortzeit-progress-en-v1') ?? '{}').learned).toEqual([vocabulary[1].id]);
+    expect(JSON.parse(window.localStorage.getItem('wortzeit-progress-de-v1') ?? '{}').favorites).toEqual([vocabulary[0].id]);
 
     app.setLearningLanguage('de');
     expect(app.learnedCount).toBe(1);
+    expect(app.todayCount).toBe(1);
+    expect(app.isLearned(vocabulary[0])).toBeTrue();
+    expect(app.isFavorite(vocabulary[0])).toBeTrue();
     app.setLearningLanguage('en');
     expect(app.learnedCount).toBe(1);
+    expect(app.todayCount).toBe(1);
 
     window.localStorage.removeItem('wortzeit-settings-v1');
     window.localStorage.removeItem('wortzeit-progress-de-v1');
     window.localStorage.removeItem('wortzeit-progress-en-v1');
+  }));
+
+  it('preserves saved words, favorites, and calendar entries when changing levels', fakeAsync(() => {
+    window.localStorage.removeItem('wortzeit-settings-v1');
+    window.localStorage.removeItem('wortzeit-progress-de-v1');
+    const fixture = TestBed.createComponent(LearningPageComponent);
+    fixture.detectChanges();
+    tick(0);
+    const app = fixture.componentInstance;
+    const a2Word = vocabulary.find((word) => word.level === 'A2')!;
+    const b1Word = vocabulary.find((word) => word.level === 'B1')!;
+
+    app.markLearned(a2Word);
+    app.toggleFavorite(a2Word);
+    app.setLearningLevel('B1');
+    expect(app.learnedCount).toBe(0);
+    app.markLearned(b1Word);
+    app.toggleFavorite(b1Word);
+    app.setLearningLevel('A2');
+
+    expect(app.learnedCount).toBe(1);
+    expect(app.isLearned(a2Word)).toBeTrue();
+    expect(app.isFavorite(a2Word)).toBeTrue();
+    expect(app.dailyProgress[Object.keys(app.dailyProgress)[0]]).toContain(a2Word.id);
+    expect(app.dailyProgress[Object.keys(app.dailyProgress)[0]]).toContain(b1Word.id);
+    const savedProgress = JSON.parse(window.localStorage.getItem('wortzeit-progress-de-v1') ?? '{}');
+    expect(savedProgress.learned).toContain(a2Word.id);
+    expect(savedProgress.learned).toContain(b1Word.id);
+    expect(savedProgress.favorites).toContain(a2Word.id);
+    expect(savedProgress.favorites).toContain(b1Word.id);
+
+    window.localStorage.removeItem('wortzeit-settings-v1');
+    window.localStorage.removeItem('wortzeit-progress-de-v1');
   }));
 
   it('migrates the previous language selection and theme without mixing in German progress', fakeAsync(() => {
@@ -233,6 +288,29 @@ describe('LearningPageComponent', () => {
 
     expect(app.currentWord).toEqual(vocabulary[11]);
     expect(app.wordIndex).toBe(11);
+  });
+
+  it('shows already learned status and advances without counting the word twice', () => {
+    const fixture = TestBed.createComponent(LearningPageComponent);
+    fixture.detectChanges();
+    const app = fixture.componentInstance;
+    const element = fixture.nativeElement as HTMLElement;
+
+    app.markLearned(vocabulary[0]);
+    const learnedCount = app.learnedCount;
+    const todayCount = app.todayCount;
+    app.currentWord = vocabulary[0];
+    app.wordIndex = 0;
+    fixture.detectChanges();
+
+    expect(element.querySelector('.learned-status')?.textContent).toContain('Уже вивчено');
+    expect(element.querySelector('.daily-actions .primary-button')?.textContent).toContain('Вже вивчено · далі');
+    (element.querySelector('.daily-actions .primary-button') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    expect(app.currentWord).toEqual(vocabulary[1]);
+    expect(app.learnedCount).toBe(learnedCount);
+    expect(app.todayCount).toBe(todayCount);
   });
 
   it('keeps the active card when learning a different word from the library', () => {
@@ -292,7 +370,7 @@ describe('LearningPageComponent', () => {
     app.showPreviousWord();
     expect(app.currentWord).toEqual(vocabulary[0]);
     app.showPreviousWord();
-    expect(app.currentWord).toEqual(vocabulary[vocabulary.length - 1]);
+    expect(app.currentWord).toEqual(app.selectedWords[app.selectedWords.length - 1]);
   });
 
   it('animates card changes when moving through words', fakeAsync(() => {
@@ -419,7 +497,7 @@ describe('LearningPageComponent', () => {
 
     compiled.querySelector<HTMLButtonElement>('.phrase-practice')?.click();
     fixture.detectChanges();
-    expect(fixture.componentInstance.feedback).toContain(phrases[0].german);
+    expect(fixture.componentInstance.feedback).toContain(phrases[0].text);
 
     compiled.querySelectorAll<HTMLButtonElement>('.tab-list button')[2].click();
     fixture.detectChanges();
@@ -464,9 +542,9 @@ describe('LearningPageComponent', () => {
     search!.value = '';
     search!.dispatchEvent(new Event('input'));
     fixture.detectChanges();
-    compiled.querySelectorAll<HTMLButtonElement>('.category-list button')[1].click();
+    compiled.querySelectorAll<HTMLButtonElement>('.category-list button')[2].click();
     fixture.detectChanges();
-    expect(fixture.componentInstance.activeCategory).toBe(fixture.componentInstance.categories[1]);
+    expect(fixture.componentInstance.activeCategory).toBe(fixture.componentInstance.categories[2]);
 
     const firstFavorite = compiled.querySelector<HTMLButtonElement>('.favorite-button');
     expect(firstFavorite).not.toBeNull();
@@ -503,11 +581,12 @@ describe('LearningPageComponent', () => {
     expect(phrases[0].translation).toBe('Доброго ранку!');
   });
 
-  it('includes exactly 1000 unique vocabulary entries with complete study examples', () => {
-    expect(vocabulary.length).toBe(1000);
-    expect(new Set(vocabulary.map((word) => word.word)).size).toBe(1000);
-    expect(new Set(vocabulary.map((word) => word.translationEnglish)).size).toBe(1000);
-    expect(new Set(vocabulary.map((word) => word.id)).size).toBe(1000);
+  it('includes 1000 A2 cards and 51 B1 cards with complete study examples', () => {
+    expect(vocabulary.filter((word) => word.level === 'A2').length).toBe(1000);
+    const b1Words = vocabulary.filter((word) => word.level === 'B1');
+    expect(b1Words.length).toBe(51);
+    expect(new Set(b1Words.map((word) => word.word)).size).toBe(51);
+    expect(new Set(vocabulary.map((word) => word.id)).size).toBe(1051);
     expect(vocabulary.every((word) =>
       word.translation && word.translationEnglish && word.category && word.phrase && word.example,
     )).toBeTrue();
