@@ -1,13 +1,16 @@
-<article class="daily-card">
+<article class="daily-card" [class.answer-is-open]="showAnswer">
   <div class="daily-card-top">
     <div class="daily-label">
-      <span class="daily-dot"></span>
-      {{ language === "de" ? "НІМЕЦЬКЕ СЛОВО" : "АНГЛІЙСЬКЕ СЛОВО" }}
+      <span class="daily-dot" aria-hidden="true"></span>
+      <span>{{ language === 'de' ? 'Німецька' : 'Англійська' }}</span>
+      <span class="word-card-separator" aria-hidden="true">·</span>
+      <span>Слово</span>
     </div>
-    <span class="word-card-position"
-      >Слово {{ position }} із {{ totalWords }}</span
-    >
+    <span class="word-card-position" aria-label="Позиція в добірці">
+      {{ position }} <span aria-hidden="true">/</span> {{ totalWords }}
+    </span>
   </div>
+
   <div
     class="word-slider"
     role="group"
@@ -15,70 +18,70 @@
     tabindex="0"
     aria-keyshortcuts="ArrowLeft ArrowRight"
     (touchstart)="onTouchStart($event)"
-    (touchend)="onTouchEnd($event)"
-  >
+    (touchend)="onTouchEnd($event)">
     <div #wordSlide class="word-slide">
       <div class="daily-word">
         <div class="word-card-meta">
           <span class="word-category">{{ word.category }}</span>
           <span class="learned-status" *ngIf="alreadyLearned" aria-live="polite">
-            <span aria-hidden="true">✓</span> Уже вивчено
+            <span aria-hidden="true">✓</span> Вже вивчене
           </span>
         </div>
+        <p class="word-study-prompt" *ngIf="!showAnswer">Згадай значення, перш ніж відкрити підказку</p>
         <h3 [attr.lang]="language">{{ displayWord() }}</h3>
         <div class="translation-reveal" *ngIf="showAnswer" aria-live="polite">
-          <span class="translation-label">Українською</span>
+          <span class="translation-label">Переклад українською</span>
           <p class="word-hint">{{ word.translation }}</p>
+          <button type="button" class="hide-answer-button" (click)="answerToggled.emit()">Приховати</button>
         </div>
-        <p class="word-hint hidden-hint" *ngIf="!showAnswer">
-          Згадай значення, потім відкрий переклад
-        </p>
+        <p class="word-hint hidden-hint" *ngIf="!showAnswer">Спробуй пригадати самостійно</p>
       </div>
+
       <div class="word-example" *ngIf="language === 'de'">
         <div>
-          <span class="example-label">СЛОВОСПОЛУЧЕННЯ</span>
-          <p>{{ word.phrase }}</p>
+          <span class="example-label">У ФРАЗІ</span>
+          <p [attr.lang]="language">{{ word.phrase }}</p>
         </div>
         <div>
-          <span class="example-label">У КОНТЕКСТІ</span>
-          <p>{{ word.example }}</p>
+          <span class="example-label">ПРИКЛАД</span>
+          <p [attr.lang]="language">{{ word.example }}</p>
         </div>
       </div>
       <div class="word-example english-context-note" *ngIf="language === 'en'">
-        Український переклад допоможе пригадати значення англійського слова.
+        <span aria-hidden="true">✦</span> Уяви ситуацію, де це слово могло б стати в пригоді.
       </div>
     </div>
   </div>
-  <div class="daily-actions">
+
+  <div class="daily-actions" [class.answer-actions]="showAnswer">
     <button
       *ngIf="!showAnswer"
-      class="outline-button"
+      class="primary-button reveal-answer-button"
       type="button"
-      (click)="answerToggled.emit()"
-    >
-      Показати переклад <span aria-hidden="true">⌄</span>
+      (click)="answerToggled.emit()">
+      <span class="action-icon" aria-hidden="true">?</span>
+      <span>Показати переклад</span>
+      <span class="action-arrow" aria-hidden="true">↓</span>
     </button>
-    <button
-      *ngIf="showAnswer"
-      class="outline-button"
-      type="button"
-      (click)="answerToggled.emit()"
-    >
-      Сховати переклад
-    </button>
-    <button class="primary-button" type="button" (click)="learned.emit(word)">
-      {{ alreadyLearned ? "Вже вивчено · далі" : "Знаю слово · далі" }}
-      <span aria-hidden="true">→</span>
-    </button>
+
+    <ng-container *ngIf="showAnswer">
+      <button class="outline-button review-button" type="button" (click)="next.emit()">
+        <span class="action-icon" aria-hidden="true">↻</span>
+        <span>Не знаю</span>
+      </button>
+      <button class="primary-button learned-button" type="button" (click)="learned.emit(word)">
+        <span>{{ alreadyLearned ? 'Далі' : 'Знаю слово' }}</span>
+        <span class="action-arrow" aria-hidden="true">→</span>
+      </button>
+    </ng-container>
   </div>
+  <p class="answer-action-note" *ngIf="showAnswer && !alreadyLearned">
+    «Не знаю» залишить слово для повторення. «Знаю слово» зарахує результат і відкриє наступне.
+  </p>
+
   <div class="slider-controls" aria-label="Перемикання карток">
-    <button
-      type="button"
-      aria-label="Попереднє слово"
-      (click)="previous.emit()"
-    >
-      <span aria-hidden="true">←</span
-      ><span class="slider-button-label">Назад</span>
+    <button type="button" aria-label="Попереднє слово" (click)="previous.emit()">
+      <span aria-hidden="true">←</span><span class="slider-button-label">Назад</span>
     </button>
     <div
       class="slider-progress"
@@ -89,10 +92,9 @@
       [attr.aria-valuenow]="position">
       <span [style.width.%]="(position / totalWords) * 100"></span>
     </div>
-    <button type="button" aria-label="Наступне слово. Поточне залишиться для повторення" (click)="next.emit()">
-      <span class="slider-button-label">Пропустити</span
-      ><span aria-hidden="true">→</span>
+    <button type="button" aria-label="Пропустити слово. Воно залишиться для повторення" (click)="next.emit()">
+      <span class="slider-button-label">Пропустити</span><span aria-hidden="true">→</span>
     </button>
-    <span class="swipe-hint">Свайп або «Пропустити» — прогрес не зміниться</span>
+    <span class="swipe-hint">Пропуск не зараховує слово — до нього можна повернутися</span>
   </div>
 </article>
