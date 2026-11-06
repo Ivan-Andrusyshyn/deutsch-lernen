@@ -4,7 +4,6 @@ import express from 'express';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import bootstrap from './src/main.server';
-import { findPixabayImage } from './src/server/pixabay-images';
 
 // The Express app serves Angular SSR and the local image API.
 export function app(): express.Express {
