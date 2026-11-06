@@ -408,6 +408,14 @@
 /* Keep exercise surfaces and text deliberately dark when hosted inside the dark app theme. */
 :host-context(.app-shell.theme-dark) .sentence-practice { border-color: #3d4141; background: #222728; }
 :host-context(.app-shell.theme-dark) .sentence-practice.quiz-mode { border-color: #514d40; background: #242625; }
+:host-context(.app-shell.theme-dark) .sentence-practice.quiz-mode .sentence-kicker {
+  border-color: #6a6248;
+  background: #38362e;
+  color: #e9dfbc;
+  font-weight: 850;
+}
+:host-context(.app-shell.theme-dark) .sentence-practice.quiz-mode .sentence-kicker::before { color: #dcc579; }
+:host-context(.app-shell.theme-dark) .sentence-practice.quiz-mode .quiz-question-card .sentence-label { color: #e0d3aa; }
 :host-context(.app-shell.theme-dark) .sentence-practice-heading h3,
 :host-context(.app-shell.theme-dark) .sentence-practice .sentence-text { color: #dedfd8; }
 :host-context(.app-shell.theme-dark) .sentence-practice .sentence-kicker,

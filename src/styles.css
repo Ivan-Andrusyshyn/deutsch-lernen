@@ -1673,3 +1673,14 @@ summary:focus-visible {
 html:has(.app-shell.theme-dark) {
   background: #151c17;
 }
+
+/* The quiz header pill should stay distinct from white surfaces in dark mode. */
+.app-shell.theme-dark .sentence-practice.quiz-mode .sentence-kicker {
+  border-color: #6a6248;
+  background: #38362e;
+  color: #e9dfbc;
+}
+
+.app-shell.theme-dark .sentence-practice.quiz-mode .sentence-kicker::before {
+  color: #dcc579;
+}
