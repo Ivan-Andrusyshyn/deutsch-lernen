@@ -1319,11 +1319,18 @@ summary:focus-visible {
 .app-shell.theme-dark .word-example p,
 .app-shell.theme-dark .vocab-example span,
 .app-shell.theme-dark .phrase-example p,
+.app-shell.theme-dark .phrase-example > span,
+.app-shell.theme-dark .comprehension h4,
 .app-shell.theme-dark .reading-german,
 .app-shell.theme-dark .translation-details p,
 .app-shell.theme-dark .comprehension > div > p,
 .app-shell.theme-dark .comprehension details p {
   color: #d5dfd6;
+}
+
+.app-shell.theme-dark .phrase-example > span,
+.app-shell.theme-dark .comprehension h4 {
+  color: #b5c3b5;
 }
 
 .app-shell.theme-dark .complete-card,
@@ -1358,32 +1365,34 @@ summary:focus-visible {
   box-shadow: none;
 }
 
-.app-shell.theme-dark .practice-heading .content-intro h3 { color: #e3ebe3; }
+.app-shell.theme-dark .practice-heading .content-intro h3 { color: #d7e1d7; }
 .app-shell.theme-dark .practice-heading .content-intro p { color: #aab8ad; }
 .app-shell.theme-dark .practice-eyebrow { color: #a9bd98; }
 .app-shell.theme-dark .tab-list button:nth-child(2).active { background: linear-gradient(180deg, #29372a, rgb(41 55 42 / 0%)); color: #d9ebd5; }
 .app-shell.theme-dark .tab-list button:nth-child(2).active .tab-count { background: #394a36; color: #c5d9b8; }
 .app-shell.theme-dark .practice-tab .practice-tab-icon { background: #303b31; color: #b4c79f; }
 .app-shell.theme-dark .practice-tab.active .practice-tab-icon { background: #394b35; color: #d0e1c3; }
-.app-shell.theme-dark .practice-mode-switch .quiz-mode-button.active { border-color: #506747; background: linear-gradient(135deg, #304431, #3b3c2b); color: #e1edcf; }
-.app-shell.theme-dark .practice-mode-switch .quiz-mode-button.active .quiz-mode-spark { color: #d7bd74; }
+.app-shell.theme-dark .practice-mode-switch .quiz-mode-button.active { border-color: #596347; background: #353a2e; color: #d5dec4; }
+.app-shell.theme-dark .practice-mode-switch .quiz-mode-button.active .quiz-mode-spark { color: #cbbd82; }
 
 .app-shell.theme-dark .sentence-practice-heading h3,
 .app-shell.theme-dark .sentence-text {
-  color: #e3ebe3;
+  color: #d8e2d8;
 }
 
 .app-shell.theme-dark .sentence-practice.quiz-mode {
-  border-color: #4a5c43;
-  background: radial-gradient(circle at 100% 0%, rgb(111 133 69 / 18%), transparent 34%), linear-gradient(135deg, #202a23, #263128 62%, #302f24);
+  border-color: #3e5042;
+  background: #202a23;
   box-shadow: 0 18px 44px rgb(0 0 0 / 20%);
 }
 
-.app-shell.theme-dark .quiz-mode .sentence-kicker { border-color: #4d6242; background: #29372a; color: #c7d9b0; }
-.app-shell.theme-dark .quiz-mode .sentence-counter { border-color: #4d6242; background: #29372a; color: #dce8ce; }
+.app-shell.theme-dark .quiz-mode .sentence-kicker { border-color: #465247; background: #29332b; color: #b9c8ad; }
+.app-shell.theme-dark .quiz-mode .sentence-kicker::before { color: #c2b77c; }
+.app-shell.theme-dark .quiz-mode .sentence-counter { border-color: #465247; background: #29332b; color: #cedacd; }
 .app-shell.theme-dark .quiz-mode .sentence-progress { background: #384537; }
-.app-shell.theme-dark .quiz-question-card { border-color: #41513f; background: linear-gradient(145deg, #27332a, #2b352b); box-shadow: 0 8px 22px rgb(0 0 0 / 12%); }
-.app-shell.theme-dark .quiz-question-card .sentence-text { color: #e5eddf; }
+.app-shell.theme-dark .sentence-progress span { background: #789176; }
+.app-shell.theme-dark .quiz-mode .sentence-progress span { background: #84916b; }
+.app-shell.theme-dark .quiz-question-card .sentence-text { color: #d8e2d8; }
 
 .app-shell.theme-dark .sentence-kicker,
 .app-shell.theme-dark .sentence-label,
@@ -1401,8 +1410,11 @@ summary:focus-visible {
 .app-shell.theme-dark .sentence-navigation button {
   border-color: #3c4c3f;
   background: #263229;
-  color: #e3ebe3;
+  color: #d1ddd2;
 }
+
+.app-shell.theme-dark .sentence-counter span { color: #b2c0b3; }
+.app-shell.theme-dark .quiz-question-card { border-color: #3b493d; background: #29342b; box-shadow: 0 8px 22px rgb(0 0 0 / 12%); }
 
 .app-shell.theme-dark .sentence-answer {
   border-color: #3a493d;
@@ -1415,7 +1427,7 @@ summary:focus-visible {
 .app-shell.theme-dark .sentence-reveal {
   border-color: #526f54;
   background: #293b2e;
-  color: #d9ebd5;
+  color: #cbdccb;
 }
 
 .app-shell.theme-dark .sentence-reveal:hover,
@@ -1425,20 +1437,26 @@ summary:focus-visible {
 }
 
 .app-shell.theme-dark .quiz-option {
-  border-color: #3c4c3f;
-  background: #263229;
-  color: #dbe7d9;
+  border-color: #39483c;
+  background: #222c25;
+  color: #cfdbd1;
+}
+
+.app-shell.theme-dark .quiz-option:hover:not(:disabled) {
+  border-color: #596d55;
+  background: #29352b;
+  box-shadow: 0 5px 13px rgb(0 0 0 / 18%);
 }
 
 .app-shell.theme-dark .quiz-option > span { background: #364436; color: #b9caa9; }
 
-.app-shell.theme-dark .quiz-option.correct { border-color: #6b9c70; background: linear-gradient(135deg, #294331, #2b3c30); color: #d4ebd2; }
+.app-shell.theme-dark .quiz-option.correct { border-color: #638568; background: #29382d; color: #c5ddc6; }
 .app-shell.theme-dark .quiz-option.correct > span { background: #3b5b3c; color: #c7e2bd; }
-.app-shell.theme-dark .quiz-option.incorrect { border-color: #a76d60; background: linear-gradient(135deg, #422e2b, #382b29); color: #f0d0c9; }
+.app-shell.theme-dark .quiz-option.incorrect { border-color: #95675e; background: #392d2b; color: #e1c2ba; }
 .app-shell.theme-dark .quiz-option.incorrect > span { background: #5a3933; color: #f0c5ba; }
-.app-shell.theme-dark .quiz-feedback.correct { color: #a9d5a6; }
-.app-shell.theme-dark .quiz-feedback.incorrect { color: #e2a99c; }
-.app-shell.theme-dark .quiz-next-button { border-color: #719a67; background: linear-gradient(110deg, #54794d, #6f965d); box-shadow: 0 7px 18px rgb(0 0 0 / 25%); color: #f7fbf4; }
+.app-shell.theme-dark .quiz-feedback.correct { color: #a9c9a3; }
+.app-shell.theme-dark .quiz-feedback.incorrect { color: #d5a398; }
+.app-shell.theme-dark .quiz-next-button { border-color: #66815d; background: linear-gradient(110deg, #4e694a, #607856); box-shadow: 0 7px 18px rgb(0 0 0 / 25%); color: #e5ede2; }
 .app-shell.theme-dark .quiz-next-button:hover { box-shadow: 0 10px 22px rgb(0 0 0 / 32%); }
 .app-shell.theme-dark .quiz-last-question { color: #c2d9ad; }
 
@@ -1453,31 +1471,39 @@ summary:focus-visible {
   color: #aab8ad;
 }
 
+.app-shell.theme-dark .practice-mode-switch button:hover {
+  border-color: #526550;
+  background: #28342b;
+  box-shadow: 0 6px 14px rgb(0 0 0 / 18%);
+}
+
 .app-shell.theme-dark .practice-choice-icon { background: #313c31; color: #b5c89f; }
 .app-shell.theme-dark .practice-choice-icon.phrase-icon { background: #3a372c; color: #d2bd8a; }
 .app-shell.theme-dark .practice-choice-icon.sentence-icon { background: #2d3c34; color: #a9c9ad; }
-.app-shell.theme-dark .practice-choice-copy strong { color: #e0e9dc; }
+.app-shell.theme-dark .practice-choice-copy strong { color: #d3ddd3; }
 .app-shell.theme-dark .practice-choice-copy small { color: #a6b3a6; }
 .app-shell.theme-dark .practice-choice-count { background: #303b31; color: #c0cfb6; }
 
 .app-shell.theme-dark .practice-mode-switch button.active {
-  border-color: #526c4d;
-  background: linear-gradient(140deg, #2c3a2f, #263129);
-  color: #d9ebd5;
+  border-color: #4b5e4c;
+  background: #2b372e;
+  color: #c7d5c8;
 }
 
 .app-shell.theme-dark .practice-mode-switch button.active .practice-choice-count { background: #3c5039; color: #d4e4c8; }
-.app-shell.theme-dark .practice-mode-switch button.quiz-mode-button.active { border-color: #617044; background: linear-gradient(135deg, #304431, #3b3c2b); color: #e1edcf; }
-.app-shell.theme-dark .practice-mode-switch button.quiz-mode-button.active .quiz-mode-spark { background: #495238; color: #d7bd74; }
-.app-shell.theme-dark .practice-mode-switch button.quiz-mode-button.active .practice-choice-count { background: #4a5033; color: #e3d99a; }
+.app-shell.theme-dark .practice-mode-switch button.quiz-mode-button.active { border-color: #535b43; background: #33382e; color: #cbd3ba; }
+.app-shell.theme-dark .practice-mode-switch button.quiz-mode-button.active .quiz-mode-spark { background: #464b37; color: #cbbd82; }
+.app-shell.theme-dark .practice-mode-switch button.quiz-mode-button.active .practice-choice-count { background: #454936; color: #d7d2a6; }
 .app-shell.theme-dark .practice-mode-switch.compact-tabs { border-bottom-color: #3b493d; }
 .app-shell.theme-dark .practice-mode-switch.compact-tabs button { border: 0; background: transparent; box-shadow: none; color: #aab8ad; }
 .app-shell.theme-dark .practice-mode-switch.compact-tabs button:hover { background: #263229; }
-.app-shell.theme-dark .practice-mode-switch.compact-tabs button.active { background: #29392d; color: #d9ebd5; }
-.app-shell.theme-dark .practice-mode-switch.compact-tabs button.active::after { background: #8eb37d; }
+.app-shell.theme-dark .practice-mode-switch.compact-tabs button.active { background: #29352c; color: #c7d5c8; }
+.app-shell.theme-dark .practice-mode-switch.compact-tabs button.active::after { background: #83a779; }
 .app-shell.theme-dark .practice-mode-switch.compact-tabs .practice-choice-count { background: #303b31; color: #c0cfb6; }
-.app-shell.theme-dark .practice-mode-switch.compact-tabs .quiz-mode-button.active { background: #343b2b; color: #e3e7c5; }
-.app-shell.theme-dark .practice-mode-switch.compact-tabs .quiz-mode-button.active .practice-choice-count { background: #4a5033; color: #e3d99a; }
+.app-shell.theme-dark .practice-mode-switch.compact-tabs .quiz-mode-button.active { background: #30352b; color: #cbd3ba; }
+.app-shell.theme-dark .practice-mode-switch.compact-tabs .quiz-mode-button.active .practice-choice-count { background: #444832; color: #d7d2a6; }
+
+.app-shell.theme-dark .phrase-card:hover { border-color: #526452; box-shadow: 0 7px 18px rgb(0 0 0 / 18%); }
 
 .sentence-practice button:focus-visible {
   outline: 2px solid #72966a;
@@ -1498,8 +1524,10 @@ summary:focus-visible {
 .app-shell.theme-dark .vocab-card h4,
 .app-shell.theme-dark .phrase-card h3,
 .app-shell.theme-dark .reading-title strong {
-  color: #e8eee8;
+  color: #dce5dc;
 }
+
+.app-shell.theme-dark .phrase-quote { color: #4b5a4c; }
 
 .app-shell.theme-dark .section-kicker,
 .app-shell.theme-dark .eyebrow,
@@ -1551,6 +1579,96 @@ summary:focus-visible {
 .app-shell.theme-dark .empty-state {
   color: #aab8ad;
 }
+
+/* Practice uses a calm blue-green accent in dark mode to separate its controls from the vocabulary UI. */
+.app-shell.theme-dark .tab-list button:nth-child(2).active {
+  background: linear-gradient(180deg, #263536, rgb(38 53 54 / 0%));
+  color: #b9d7d2;
+}
+.app-shell.theme-dark .tab-list button:nth-child(2).active .tab-count { background: #304342; color: #c3dcd7; }
+.app-shell.theme-dark .practice-tab .practice-tab-icon { background: #2e4140; color: #9fc7c0; }
+.app-shell.theme-dark .practice-tab.active .practice-tab-icon { background: #38514e; color: #c4dfd8; }
+
+.app-shell.theme-dark .practice-eyebrow { color: #9fc5bd; }
+.app-shell.theme-dark .practice-heading .content-intro h3 { color: #d4e1dd; }
+.app-shell.theme-dark .practice-heading .content-intro p { color: #b2c1bd; }
+
+.app-shell.theme-dark .practice-mode-switch button {
+  border-color: #454354;
+  background: #25242c;
+  color: #b9b6c4;
+}
+.app-shell.theme-dark .practice-mode-switch button:hover { border-color: #68617e; background: #302e39; }
+.app-shell.theme-dark .practice-choice-icon { background: #373443; color: #c2bbda; }
+.app-shell.theme-dark .practice-choice-icon.phrase-icon { background: #373443; color: #c2bbda; }
+.app-shell.theme-dark .practice-choice-icon.sentence-icon { background: #343541; color: #b9c4dc; }
+.app-shell.theme-dark .practice-choice-copy strong { color: #d0dfda; }
+.app-shell.theme-dark .practice-choice-copy small { color: #b0bfbb; }
+.app-shell.theme-dark .practice-choice-count { background: #383644; color: #c8c1dc; }
+.app-shell.theme-dark .practice-mode-switch button.active { border-color: #716a88; background: #353242; color: #e0dbef; }
+.app-shell.theme-dark .practice-mode-switch button.active .practice-choice-count { background: #48435b; color: #e0dbef; }
+.app-shell.theme-dark .practice-mode-switch button.quiz-mode-button.active { border-color: #77708b; background: #393548; color: #e4def1; }
+.app-shell.theme-dark .practice-mode-switch button.quiz-mode-button.active .quiz-mode-spark { background: #4a455d; color: #d6cbed; }
+.app-shell.theme-dark .practice-mode-switch button.quiz-mode-button.active .practice-choice-count { background: #4b465e; color: #e4def1; }
+
+.app-shell.theme-dark .practice-mode-switch.compact-tabs { border-bottom-color: #454354; }
+.app-shell.theme-dark .practice-mode-switch.compact-tabs button { background: transparent; color: #b4b0bf; }
+.app-shell.theme-dark .practice-mode-switch.compact-tabs button:hover { background: #302e39; }
+.app-shell.theme-dark .practice-mode-switch.compact-tabs button.active { background: #353242; color: #e0dbef; }
+.app-shell.theme-dark .practice-mode-switch.compact-tabs button.active::after { background: #aa9bd2; }
+.app-shell.theme-dark .practice-mode-switch.compact-tabs .practice-choice-copy strong { color: inherit; }
+.app-shell.theme-dark .practice-mode-switch.compact-tabs .practice-choice-count { background: #383644; color: #c8c1dc; }
+.app-shell.theme-dark .practice-mode-switch.compact-tabs .quiz-mode-button.active { background: #393548; color: #e4def1; }
+.app-shell.theme-dark .practice-mode-switch.compact-tabs .quiz-mode-button.active .practice-choice-count { background: #4b465e; color: #e4def1; }
+
+.app-shell.theme-dark .phrase-card { border-color: #394947; background: #202b2b; }
+.app-shell.theme-dark .phrase-card h3 { color: #d8e4df; }
+.app-shell.theme-dark .phrase-card .vocab-translation { color: #b7c7c2; }
+.app-shell.theme-dark .phrase-quote { color: #405452; }
+.app-shell.theme-dark .phrase-example { border-color: #394b49; }
+.app-shell.theme-dark .phrase-example > span { color: #a8c1ba; }
+.app-shell.theme-dark .phrase-example p { color: #c8d6d1; }
+.app-shell.theme-dark .phrase-practice { color: #a8d0c5; }
+.app-shell.theme-dark .phrase-card:hover { border-color: #587a73; }
+
+.app-shell.theme-dark .sentence-practice { border-color: #394b49; background: #202a2a; }
+.app-shell.theme-dark .sentence-practice.quiz-mode { border-color: #435d59; background: #202a2a; }
+.app-shell.theme-dark .sentence-practice-heading h3,
+.app-shell.theme-dark .sentence-practice .sentence-text { color: #d8e4df; }
+.app-shell.theme-dark .sentence-practice .sentence-kicker,
+.app-shell.theme-dark .sentence-practice .sentence-label,
+.app-shell.theme-dark .sentence-practice .sentence-answer > span { color: #a9c8bf; }
+.app-shell.theme-dark .sentence-practice .sentence-instructions,
+.app-shell.theme-dark .sentence-practice .sentence-no-save { color: #b0bfbb; }
+.app-shell.theme-dark .sentence-practice .sentence-counter { border-color: #405451; background: #293635; color: #d0dfda; }
+.app-shell.theme-dark .sentence-practice .sentence-counter span { color: #aebfba; }
+.app-shell.theme-dark .sentence-practice .sentence-progress { background: #354442; }
+.app-shell.theme-dark .sentence-practice .sentence-progress span { background: #789f98; }
+.app-shell.theme-dark .sentence-practice.quiz-mode .sentence-progress span { background: #82a69a; }
+.app-shell.theme-dark .sentence-practice .sentence-exercise { border-color: #3b4c4a; background: #293433; }
+.app-shell.theme-dark .sentence-practice .sentence-answer { border-color: #40524f; }
+.app-shell.theme-dark .sentence-practice .sentence-answer p { color: #c5d7d0; }
+.app-shell.theme-dark .sentence-practice .sentence-reveal,
+.app-shell.theme-dark .sentence-practice .sentence-navigation button { border-color: #4b6660; background: #2a3c39; color: #cbded7; }
+.app-shell.theme-dark .sentence-practice .sentence-reveal:hover,
+.app-shell.theme-dark .sentence-practice .sentence-navigation button:hover:not(:disabled) { border-color: #6b9188; background: #344a46; }
+
+.app-shell.theme-dark .sentence-practice .quiz-question-card { border-color: #405451; background: #2b3837; }
+.app-shell.theme-dark .sentence-practice .quiz-question-card .sentence-text { color: #d8e4df; }
+.app-shell.theme-dark .sentence-practice .quiz-option { border-color: #405653; background: #242f2f; color: #d0dcd7; }
+.app-shell.theme-dark .sentence-practice .quiz-option > span { background: #354947; color: #c1d7d1; }
+.app-shell.theme-dark .sentence-practice .quiz-option:hover:not(:disabled) { border-color: #65877e; background: #2d403d; }
+.app-shell.theme-dark .sentence-practice .quiz-option.correct { border-color: #62836d; background: #2b3c34; color: #c7dfcb; }
+.app-shell.theme-dark .sentence-practice .quiz-option.correct > span { background: #3d5a45; color: #d2e6d3; }
+.app-shell.theme-dark .sentence-practice .quiz-option.incorrect { border-color: #8a625b; background: #392e2e; color: #e0c3bd; }
+.app-shell.theme-dark .sentence-practice .quiz-option.incorrect > span { background: #55403d; color: #e7c9c1; }
+.app-shell.theme-dark .sentence-practice .quiz-feedback.correct { color: #a9d2b1; }
+.app-shell.theme-dark .sentence-practice .quiz-feedback.incorrect { color: #d7a9a0; }
+.app-shell.theme-dark .sentence-practice .quiz-next-button { border-color: #63867d; background: #426961; color: #e5efea; }
+.app-shell.theme-dark .sentence-practice .quiz-last-question { color: #b4d4c0; }
+.app-shell.theme-dark .practice-feedback { border-color: #405c58; background: #263735; color: #c8ded8; }
+.app-shell.theme-dark .practice-mode-switch button:focus-visible,
+.app-shell.theme-dark .sentence-practice button:focus-visible { outline-color: #83b7ae; }
 
 html:has(.app-shell.theme-dark) {
   background: #151c17;

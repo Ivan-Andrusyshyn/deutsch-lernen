@@ -605,7 +605,7 @@ main,
 }
 .practice-tab:hover .practice-tab-icon { transform: rotate(12deg); }
 .practice-tab.active .practice-tab-icon { background: #e1ecd7; color: #5b794e; }
-.practice-tab .tab-count { font-size: 8px; letter-spacing: 0.01em; }
+.practice-tab .tab-count { color: #596b52; font-size: 9px; letter-spacing: 0.01em; }
 
 .tab-list button.active::after {
   position: absolute;
@@ -886,7 +886,7 @@ main,
 
 .practice-eyebrow {
   margin: 0 0 7px;
-  color: #80916f;
+  color: #5e704f;
   font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -903,7 +903,7 @@ main,
 .practice-heading .content-intro p {
   max-width: 580px;
   margin: 7px 0 0;
-  color: #778477;
+  color: #5e6d60;
   font-size: 12px;
   line-height: 1.55;
 }
@@ -950,14 +950,17 @@ main,
 
 .practice-choice-copy { min-width: 0; display: grid; gap: 4px; }
 .practice-choice-copy strong { color: #415345; font-size: 12px; font-weight: 700; }
-.practice-choice-copy small { color: #8a9589; font-size: 9px; font-weight: 500; line-height: 1.35; }
+.practice-choice-copy .quiz-choice-title { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 7px; }
+.quiz-choice-badge { display: inline-flex; align-items: center; gap: 3px; border: 1px solid #e8dfbd; border-radius: 999px; padding: 2px 6px; background: #f7f1dc; color: #78683e; font-size: 8px; font-weight: 700; line-height: 1.3; letter-spacing: 0.02em; }
+.quiz-choice-badge > span { color: #a78a4a; font-size: 9px; }
+.practice-choice-copy small { color: #5e6d60; font-size: 10px; font-weight: 500; line-height: 1.4; }
 .practice-choice-count {
   min-width: 28px;
   border-radius: 9px;
   padding: 5px 7px;
   background: #f2f4ed;
-  color: #75836d;
-  font-size: 9px;
+  color: #596b52;
+  font-size: 10px;
   font-weight: 700;
   text-align: center;
   font-variant-numeric: tabular-nums;
@@ -1014,7 +1017,8 @@ main,
 .practice-mode-switch.compact-tabs .practice-choice-copy { display: block; }
 .practice-mode-switch.compact-tabs .practice-choice-copy strong { color: inherit; font-size: 11px; }
 .practice-mode-switch.compact-tabs .practice-choice-copy small { display: none; }
-.practice-mode-switch.compact-tabs .practice-choice-count { min-width: 22px; padding: 4px 5px; background: #f0f3eb; font-size: 8px; }
+.practice-mode-switch.compact-tabs .quiz-choice-badge { display: none; }
+.practice-mode-switch.compact-tabs .practice-choice-count { min-width: 22px; padding: 4px 5px; background: #f0f3eb; color: #52654b; font-size: 9px; }
 .practice-mode-switch.compact-tabs button.active { background: #f1f6eb; color: #456d47; }
 .practice-mode-switch.compact-tabs button.active::after { position: absolute; right: 9px; bottom: -1px; left: 9px; height: 2px; border-radius: 2px; background: #6e9562; content: ''; }
 .practice-mode-switch.compact-tabs .quiz-mode-button.active { border: 0; background: #f5f5e9; color: #68753e; box-shadow: none; }
@@ -1061,8 +1065,8 @@ main,
 
 .phrase-example > span,
 .comprehension h4 {
-  color: #9a9d8e;
-  font-size: 8px;
+  color: #64705f;
+  font-size: 9px;
   font-weight: 700;
   letter-spacing: 1px;
 }
@@ -1390,6 +1394,66 @@ main,
     opacity: 1;
   }
 }
+
+/* Component-scoped dark palette for the practice chooser and phrase cards. */
+:host-context(.app-shell.theme-dark) .practice-heading .content-intro h3 { color: #d9d9d1; }
+:host-context(.app-shell.theme-dark) .practice-heading .content-intro p { color: #b9bcb5; }
+:host-context(.app-shell.theme-dark) .practice-eyebrow { color: #c0b28e; }
+:host-context(.app-shell.theme-dark) .practice-mode-switch button {
+  border-color: #414344;
+  background: #272a2c;
+  color: #c5c8c3;
+}
+:host-context(.app-shell.theme-dark) .practice-mode-switch button:hover { border-color: #656254; background: #30302e; }
+:host-context(.app-shell.theme-dark) .practice-choice-icon { background: #35383a; color: #c3c2b9; }
+:host-context(.app-shell.theme-dark) .practice-choice-icon.phrase-icon,
+:host-context(.app-shell.theme-dark) .practice-choice-icon.sentence-icon { background: #35383a; color: #c3c2b9; }
+:host-context(.app-shell.theme-dark) .practice-choice-copy strong { color: #deded6; }
+:host-context(.app-shell.theme-dark) .practice-choice-copy small { color: #b6b9b3; }
+:host-context(.app-shell.theme-dark) .practice-choice-count { background: #383a3a; color: #d0d1ca; }
+:host-context(.app-shell.theme-dark) .practice-mode-switch button.active { border-color: #625d4b; background: #353532; color: #e0dccd; }
+:host-context(.app-shell.theme-dark) .practice-mode-switch button.active .practice-choice-count { background: #494538; color: #e4dcc1; }
+:host-context(.app-shell.theme-dark) .practice-mode-switch button.quiz-mode-button.active { border-color: #776a4c; background: #3b3830; color: #e6dec8; }
+:host-context(.app-shell.theme-dark) .practice-mode-switch button.quiz-mode-button.active .practice-choice-icon { background: #4c4433; color: #d4c18c; }
+:host-context(.app-shell.theme-dark) .practice-mode-switch button.quiz-mode-button.active .practice-choice-count { background: #4b4434; color: #e6dec8; }
+:host-context(.app-shell.theme-dark) .practice-mode-switch .quiz-choice-badge { border-color: #6b6044; background: #403b31; color: #d8c99e; }
+:host-context(.app-shell.theme-dark) .practice-mode-switch .quiz-choice-badge > span { color: #c9b477; }
+:host-context(.app-shell.theme-dark) .practice-mode-switch .practice-choice {
+  border-color: #414344;
+  background: #272a2c;
+  background-image: none;
+  color: #c5c8c3;
+}
+:host-context(.app-shell.theme-dark) .practice-mode-switch .practice-choice.active {
+  border-color: #625d4b;
+  background: #353532;
+  background-image: none;
+  color: #e0dccd;
+}
+:host-context(.app-shell.theme-dark) .practice-mode-switch .practice-choice.quiz-mode-button.active {
+  border-color: #776a4c;
+  background: #3b3830;
+  background-image: none;
+  color: #e6dec8;
+}
+:host-context(.app-shell.theme-dark) .practice-mode-switch.compact-tabs { border-bottom-color: #414344; }
+:host-context(.app-shell.theme-dark) .practice-mode-switch.compact-tabs button { border: 0; background: transparent; color: #b8bbb6; }
+:host-context(.app-shell.theme-dark) .practice-mode-switch.compact-tabs button:hover { background: #2c2e2e; }
+:host-context(.app-shell.theme-dark) .practice-mode-switch.compact-tabs button.active { background: #333431; color: #e0dccd; }
+:host-context(.app-shell.theme-dark) .practice-mode-switch.compact-tabs button.active::after { background: #b6a36d; }
+:host-context(.app-shell.theme-dark) .practice-mode-switch.compact-tabs .practice-choice-copy strong { color: inherit; }
+:host-context(.app-shell.theme-dark) .practice-mode-switch.compact-tabs .practice-choice-count { background: #383a3a; color: #d0d1ca; }
+:host-context(.app-shell.theme-dark) .practice-mode-switch.compact-tabs .quiz-mode-button.active { background: #3b3830; color: #e6dec8; }
+:host-context(.app-shell.theme-dark) .practice-mode-switch.compact-tabs .quiz-mode-button.active .practice-choice-count { background: #4b4434; color: #e6dec8; }
+:host-context(.app-shell.theme-dark) .phrase-card { border-color: #3d4141; background: #222728; }
+:host-context(.app-shell.theme-dark) .phrase-card h3 { color: #dedfd8; }
+:host-context(.app-shell.theme-dark) .phrase-card .vocab-translation { color: #b9c0bb; }
+:host-context(.app-shell.theme-dark) .phrase-quote { color: #464642; }
+:host-context(.app-shell.theme-dark) .phrase-example { border-color: #3d4141; }
+:host-context(.app-shell.theme-dark) .phrase-example > span { color: #b9b29b; }
+:host-context(.app-shell.theme-dark) .phrase-example p { color: #c6cbc5; }
+:host-context(.app-shell.theme-dark) .phrase-practice { color: #c2b27e; }
+:host-context(.app-shell.theme-dark) .phrase-card:hover { border-color: #71684c; }
 
 @keyframes goal-card-in {
   from {

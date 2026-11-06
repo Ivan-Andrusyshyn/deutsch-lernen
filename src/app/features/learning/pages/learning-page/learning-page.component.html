@@ -201,7 +201,7 @@
             </button>
             <button type="button" class="practice-choice quiz-mode-button" [class.active]="practiceMode === 'quiz'" [attr.aria-pressed]="practiceMode === 'quiz'" (click)="setPracticeMode('quiz')">
               <span class="practice-choice-icon quiz-mode-spark" aria-hidden="true">✦</span>
-              <span class="practice-choice-copy"><strong>Мініквіз</strong><small>Перевір себе у 200 завданнях</small></span>
+              <span class="practice-choice-copy"><strong class="quiz-choice-title">Мініквіз <span class="quiz-choice-badge"><span aria-hidden="true">✦</span> Челендж</span></strong><small>Перевір себе у 200 завданнях</small></span>
               <span class="practice-choice-count">200</span>
             </button>
           </div>
