@@ -661,12 +661,12 @@ describe('LearningPageComponent', () => {
     ).toEqual([]);
   });
 
-  it('includes practice phrases and removes the separate reading tab', () => {
+  it('includes practice phrases and the reading tab', () => {
     expect(phrases.length).toBeGreaterThan(0);
     const fixture = TestBed.createComponent(LearningPageComponent);
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelectorAll('.tab-list button').length).toBe(2);
-    expect(fixture.nativeElement.querySelector('.tab-list')?.textContent).not.toContain('Тексти');
+    expect(fixture.nativeElement.querySelectorAll('.tab-list button').length).toBe(3);
+    expect(fixture.nativeElement.querySelector('.tab-list')?.textContent).toContain('Тексти');
     fixture.destroy();
   });
 });

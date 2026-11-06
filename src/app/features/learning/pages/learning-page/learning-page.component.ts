@@ -13,6 +13,7 @@ import type {
   AppTheme,
   DailyGoal,
   LearningLanguage,
+  LongReadingText,
   Phrase,
   WordCard,
 } from '../../../../core/models/vocabulary.model';
@@ -25,13 +26,15 @@ import { LearningCalendarService } from '../../services/learning-calendar.servic
 import { LearningProgressService } from '../../services/learning-progress.service';
 import { LearningSettingsService } from '../../services/learning-settings.service';
 import { phrasesFor } from '../../data/learning-materials';
+import { readingTextsFor } from '../../data/reading-texts';
 import { vocabulary } from '../../data/vocabulary';
 import { VocabularyCardComponent } from '../../../../shared/components/vocabulary-card/vocabulary-card.component';
 import { LearningWordCardComponent } from '../../components/learning-word-card/learning-word-card.component';
 import { SentencePracticeComponent } from '../../components/sentence-practice/sentence-practice.component';
 
-type LearningTab = 'words' | 'practice';
+type LearningTab = 'words' | 'practice' | 'texts';
 type PracticeMode = 'phrases' | 'sentences' | 'quiz';
+type ReadingSegment = { text: string; difficultWord?: { word: string; translation: string } };
 
 function wordCountLabel(count: number, grammaticalCase: 'nominative' | 'genitive'): string {
   const lastTwoDigits = count % 100;
@@ -87,6 +90,8 @@ export class LearningPageComponent {
   private readonly wordPageSignal = signal(1);
   private readonly showAnswerSignal = signal(false);
   private readonly feedbackSignal = signal('');
+  private readonly expandedReadingIdSignal = signal<string | null>(null);
+  private readonly revealedWordHintsSignal = signal<Set<string>>(new Set());
   private readonly wordIndexSignal = signal(0);
   private readonly currentWordSignal = signal<WordCard>(vocabulary.find((word) => word.level === 'A2')!);
 
@@ -269,6 +274,51 @@ export class LearningPageComponent {
 
   get phrases(): Phrase[] {
     return phrasesFor(this.learningLanguage);
+  }
+
+  get readingTexts(): LongReadingText[] {
+    return readingTextsFor(this.learningLanguage, this.settings.level());
+  }
+
+  get expandedReadingId(): string | null {
+    return this.expandedReadingIdSignal();
+  }
+
+  readingParagraphs(text: LongReadingText): string[] {
+    return text.body.split(/\n\n+/);
+  }
+
+  readingSegments(paragraph: string, text: LongReadingText): ReadingSegment[] {
+    const words = new Map(text.difficultWords.map((entry) => [this.normalizeReadingWord(entry.word), entry]));
+    const tokens = paragraph.match(/[\p{L}\p{N}’'-]+|[^\p{L}\p{N}’'-]+/gu) ?? [paragraph];
+    return tokens.map((token) => ({
+      text: token,
+      difficultWord: words.get(this.normalizeReadingWord(token.replace(/^[’'-]+|[’'-]+$/g, ''))),
+    }));
+  }
+
+  toggleReadingText(text: LongReadingText): void {
+    this.expandedReadingIdSignal.set(this.expandedReadingId === text.id ? null : text.id);
+    this.revealedWordHintsSignal.set(new Set());
+  }
+
+  toggleWordHint(text: LongReadingText, word: string): void {
+    const key = `${text.id}:${this.normalizeReadingWord(word)}`;
+    const next = new Set(this.revealedWordHintsSignal());
+    next.has(key) ? next.delete(key) : next.add(key);
+    this.revealedWordHintsSignal.set(next);
+  }
+
+  isWordHintOpen(text: LongReadingText, word: string): boolean {
+    return this.revealedWordHintsSignal().has(`${text.id}:${this.normalizeReadingWord(word)}`);
+  }
+
+  readingMinutes(text: LongReadingText): number {
+    return Math.max(2, Math.ceil(text.body.split(/\s+/).length / 150));
+  }
+
+  private normalizeReadingWord(word: string): string {
+    return word.toLocaleLowerCase(this.learningLanguage === 'de' ? 'de' : 'en').replace(/[.,!?;:()[\]{}“”"„]/g, '');
   }
 
   get learnedCount(): number {

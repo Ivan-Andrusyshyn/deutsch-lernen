@@ -119,6 +119,7 @@
       <nav class="tab-list" role="tablist" aria-label="Обрати матеріал">
         <button type="button" role="tab" [attr.aria-selected]="activeTab === 'words'" [class.active]="activeTab === 'words'" (click)="selectTab('words')"><span>✦</span> Слова <span class="tab-count">{{ selectedWords.length }}</span></button>
         <button type="button" class="practice-tab" role="tab" [attr.aria-selected]="activeTab === 'practice'" [class.active]="activeTab === 'practice'" (click)="selectTab('practice')"><span class="practice-tab-icon" aria-hidden="true">✧</span><span>Практика</span><span class="tab-count">3 формати</span></button>
+        <button type="button" class="reading-tab" role="tab" [attr.aria-selected]="activeTab === 'texts'" [class.active]="activeTab === 'texts'" (click)="selectTab('texts')"><span aria-hidden="true">▤</span><span>Тексти</span><span class="tab-count">10 читань</span></button>
       </nav>
 
       <div *ngIf="storageMessage" class="storage-message" role="status">{{ storageMessage }}</div>
@@ -231,6 +232,44 @@
           [language]="learningLanguage"
           [level]="settings.level()" />
         </div>
+      </ng-container>
+
+      <ng-container *ngIf="activeTab === 'texts'">
+        <section class="reading-section" aria-labelledby="reading-heading">
+          <div class="reading-intro">
+            <div>
+              <p class="reading-eyebrow">ЧИТАННЯ · {{ learningLanguageName }} · {{ settings.level() }}</p>
+              <h3 id="reading-heading">Історії для твого рівня</h3>
+              <p>Читай у своєму темпі. Натисни на підсвічене слово, щоб побачити переклад.</p>
+            </div>
+            <div class="reading-count"><span aria-hidden="true">✧</span><strong>{{ readingTexts.length }}</strong><small>текстів</small></div>
+          </div>
+
+          <div class="reading-list">
+            <article class="reading-card" *ngFor="let text of readingTexts; let index = index" [class.is-open]="expandedReadingId === text.id">
+              <button type="button" class="reading-toggle" [attr.aria-expanded]="expandedReadingId === text.id" [attr.aria-controls]="'reading-content-' + text.id" (click)="toggleReadingText(text)">
+                <span class="reading-number">{{ (index + 1).toString().padStart(2, '0') }}</span>
+                <span class="reading-title"><small>{{ text.topic }} · {{ readingMinutes(text) }} хв читання</small><strong>{{ text.title }}</strong></span>
+                <span class="reading-action">{{ expandedReadingId === text.id ? 'Згорнути' : 'Читати' }} <span aria-hidden="true">{{ expandedReadingId === text.id ? '−' : '＋' }}</span></span>
+              </button>
+              <div class="reading-content" *ngIf="expandedReadingId === text.id" [id]="'reading-content-' + text.id">
+                <div class="reading-language-note"><span aria-hidden="true">✦</span> {{ learningLanguage === 'de' ? 'Німецький текст' : 'Англійський текст' }} <span>·</span> {{ settings.level() }}</div>
+                <p class="reading-paragraph" *ngFor="let paragraph of readingParagraphs(text)">
+                  <ng-container *ngFor="let segment of readingSegments(paragraph, text)">
+                    <ng-container *ngIf="segment.difficultWord as difficultWord; else plainReadingText">
+                      <span class="reading-word-wrap">
+                        <button type="button" class="reading-word" [attr.aria-expanded]="isWordHintOpen(text, difficultWord.word)" [attr.aria-label]="'Переклад слова ' + difficultWord.word" (click)="toggleWordHint(text, difficultWord.word)">{{ segment.text }}</button>
+                        <span class="reading-word-hint" *ngIf="isWordHintOpen(text, difficultWord.word)" role="status">{{ difficultWord.translation }}</span>
+                      </span>
+                    </ng-container>
+                    <ng-template #plainReadingText>{{ segment.text }}</ng-template>
+                  </ng-container>
+                </p>
+                <p class="reading-tip"><span aria-hidden="true">↗</span> Підказка: натискай на підкреслені слова, щоб підглянути переклад.</p>
+              </div>
+            </article>
+          </div>
+        </section>
       </ng-container>
 
     </section>

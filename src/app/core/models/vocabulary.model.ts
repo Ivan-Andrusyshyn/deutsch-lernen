@@ -29,3 +29,13 @@ export interface ReadingText {
   translation: string;
   questions: Array<{ question: string; answer: string }>;
 }
+
+export interface LongReadingText {
+  id: string;
+  title: string;
+  level: LearningLevel;
+  language: LearningLanguage;
+  topic: string;
+  body: string;
+  difficultWords: Array<{ word: string; translation: string }>;
+}
