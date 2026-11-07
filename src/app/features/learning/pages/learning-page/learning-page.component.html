@@ -27,7 +27,7 @@
         <p class="hero-description">
           Обери мову та рівень, який вивчаєш зараз. Слова й прогрес підлаштуються під твій рівень.
         </p>
-        <div class="learning-language-picker" role="group" aria-label="Обери мову навчання">
+        <div class="learning-language-picker" role="group" aria-label="Обери мову навчання" data-onboarding-target="language" [class.onboarding-focus]="isOnboardingTarget('language')">
           <span class="language-picker-label">ЗАРАЗ ВИВЧАЮ</span>
           <div class="learning-language-switch">
             <button type="button" [class.active]="learningLanguage === 'de'" [attr.aria-pressed]="learningLanguage === 'de'" (click)="setLearningLanguage('de')">
@@ -40,7 +40,7 @@
             </button>
           </div>
         </div>
-        <div class="learning-language-picker level-picker" role="group" aria-label="Обери рівень навчання">
+        <div class="learning-language-picker level-picker" role="group" aria-label="Обери рівень навчання" data-onboarding-target="level" [class.onboarding-focus]="isOnboardingTarget('level')">
           <span class="language-picker-label">МІЙ РІВЕНЬ</span>
           <div class="learning-language-switch">
             <button type="button" [class.active]="settings.level() === 'A2'" [attr.aria-pressed]="settings.level() === 'A2'" (click)="setLearningLevel('A2')">
@@ -77,7 +77,7 @@
       </div>
     </section>
 
-    <section class="progress-panel" aria-label="Твій прогрес">
+    <section class="progress-panel" aria-label="Твій прогрес" data-onboarding-target="progress" [class.onboarding-focus]="isOnboardingTarget('progress')">
       <div class="progress-heading">
         <div>
           <p class="section-kicker">ТВІЙ ПРОГРЕС</p>
@@ -118,14 +118,16 @@
 
       <nav class="tab-list" role="tablist" aria-label="Обрати матеріал">
         <button type="button" role="tab" [attr.aria-selected]="activeTab === 'words'" [class.active]="activeTab === 'words'" (click)="selectTab('words')"><span>✦</span> Слова <span class="tab-count">{{ selectedWords.length }}</span></button>
-        <button type="button" class="practice-tab" role="tab" [attr.aria-selected]="activeTab === 'practice'" [class.active]="activeTab === 'practice'" (click)="selectTab('practice')"><span class="practice-tab-icon" aria-hidden="true">✧</span><span>Практика</span><span class="tab-count">3 формати</span></button>
-        <button type="button" class="reading-tab" role="tab" [attr.aria-selected]="activeTab === 'texts'" [class.active]="activeTab === 'texts'" (click)="selectTab('texts')"><span aria-hidden="true">▤</span><span>Тексти</span><span class="tab-count">10 читань</span></button>
+        <button type="button" class="practice-tab" role="tab" data-onboarding-target="practice" [class.onboarding-focus]="isOnboardingTarget('practice')" [attr.aria-selected]="activeTab === 'practice'" [class.active]="activeTab === 'practice'" (click)="selectTab('practice')"><span class="practice-tab-icon" aria-hidden="true">✧</span><span>Практика</span><span class="tab-count">3 формати</span></button>
+        <button type="button" class="reading-tab" role="tab" data-onboarding-target="texts" [class.onboarding-focus]="isOnboardingTarget('texts')" [attr.aria-selected]="activeTab === 'texts'" [class.active]="activeTab === 'texts'" (click)="selectTab('texts')"><span aria-hidden="true">▤</span><span>Тексти</span><span class="tab-count">10 читань</span></button>
       </nav>
 
       <div *ngIf="storageMessage" class="storage-message" role="status">{{ storageMessage }}</div>
 
       <ng-container *ngIf="activeTab === 'words'">
         <app-learning-word-card
+          data-onboarding-target="card"
+          [class.onboarding-focus]="isOnboardingTarget('card')"
           *ngIf="nextWord; else allWordsLearned"
           [word]="currentWord"
           [language]="learningLanguage"
@@ -147,7 +149,7 @@
           <span class="feedback-icon" aria-hidden="true">✦</span><p>{{ feedback }}</p><button type="button" aria-label="Закрити повідомлення" (click)="feedback = ''">×</button>
         </div>
 
-        <div class="library-heading">
+        <div class="library-heading" data-onboarding-target="library" [class.onboarding-focus]="isOnboardingTarget('library')">
           <div><h3>Словник {{ learningLanguageName }}</h3><p>Обирай слова, які хочеш повторити</p></div>
           <label class="search-box">
             <span aria-hidden="true">⌕</span>
@@ -280,6 +282,7 @@
     <a class="brand footer-brand" href="#start"><span class="brand-mark">W</span><span>wortzeit<span class="brand-period"> duo.</span></span></a>
     <p>Маленькі слова. Великі можливості.</p>
     <span>Прогрес зберігається у твоєму браузері <span class="footer-heart">♡</span></span>
+    <button class="onboarding-help" type="button" (click)="startOnboarding()">Показати підказки</button>
   </footer>
 </div>
 
@@ -294,5 +297,34 @@
     <h2 id="goal-celebration-title">План-мінімум виконано!</h2>
     <p class="goal-message">Ти вивчив(-ла) {{ dailyGoal }} слів сьогодні. Ведмедик пишається тобою — так тримати!</p>
     <button class="primary-button goal-continue" type="button" (click)="continueAfterDailyGoal()">Продовжити <span>→</span></button>
+  </section>
+</div>
+
+<div *ngIf="onboardingOpen" class="onboarding-backdrop" [class.theme-dark]="theme === 'dark'">
+  <section class="onboarding-dialog" role="dialog" aria-modal="true" aria-labelledby="onboarding-title" aria-describedby="onboarding-description">
+    <div class="onboarding-topline">
+      <span class="onboarding-brand"><span class="onboarding-brand-mark">W</span> ПЕРШИЙ ВІЗИТ</span>
+      <button class="onboarding-close" type="button" aria-label="Закрити підказки" (click)="finishOnboarding()">×</button>
+    </div>
+    <div class="onboarding-progress" role="progressbar" aria-label="Крок знайомства" [attr.aria-valuemin]="1" [attr.aria-valuemax]="onboardingSteps.length" [attr.aria-valuenow]="onboardingStepNumber">
+      <span [style.width.%]="onboardingStepPercent"></span>
+    </div>
+    <div class="onboarding-content" [attr.data-step]="onboardingStepNumber">
+      <span class="onboarding-step-count">КРОК {{ onboardingStepNumber }} З {{ onboardingSteps.length }}</span>
+      <span class="onboarding-icon" aria-hidden="true">{{ onboardingStep.icon }}</span>
+      <h2 id="onboarding-title">{{ onboardingStep.title }}</h2>
+      <p id="onboarding-description">{{ onboardingStep.description }}</p>
+    </div>
+    <div class="onboarding-footer">
+      <button class="onboarding-skip" type="button" (click)="finishOnboarding()">Пропустити тур</button>
+      <div class="onboarding-navigation">
+        <button *ngIf="onboardingStepNumber > 1" class="onboarding-back" type="button" (click)="previousOnboardingStep()" aria-label="Попередній крок">←</button>
+        <button class="onboarding-next" type="button" (click)="nextOnboardingStep()">
+          {{ onboardingStepNumber === onboardingSteps.length ? 'Почати навчання' : 'Далі' }}
+          <span aria-hidden="true">{{ onboardingStepNumber === onboardingSteps.length ? '✓' : '→' }}</span>
+        </button>
+      </div>
+    </div>
+    <p class="onboarding-footnote"><span aria-hidden="true">✓</span> Прогрес і налаштування збережуться у цьому браузері</p>
   </section>
 </div>

@@ -2,6 +2,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
   Component,
   Inject,
+  HostListener,
   PLATFORM_ID,
   afterNextRender,
   computed,
@@ -34,9 +35,33 @@ import { SentencePracticeComponent } from '../../components/sentence-practice/se
 
 type LearningTab = 'words' | 'practice' | 'texts';
 type PracticeMode = 'phrases' | 'sentences' | 'quiz';
-type ReadingSegment = { text: string; difficultWord?: { word: string; translation: string } };
+type OnboardingTarget =
+  | 'language'
+  | 'level'
+  | 'progress'
+  | 'card'
+  | 'library'
+  | 'practice'
+  | 'texts';
+type ReadingSegment = {
+  text: string;
+  difficultWord?: { word: string; translation: string };
+};
 
-function wordCountLabel(count: number, grammaticalCase: 'nominative' | 'genitive'): string {
+interface OnboardingStep {
+  target: OnboardingTarget;
+  title: string;
+  description: string;
+  icon: string;
+  tab?: LearningTab;
+}
+
+const ONBOARDING_STORAGE_KEY = 'deutsch-kompass-onboarding-v1';
+
+function wordCountLabel(
+  count: number,
+  grammaticalCase: 'nominative' | 'genitive',
+): string {
   const lastTwoDigits = count % 100;
   const lastDigit = count % 10;
   if (grammaticalCase === 'nominative') {
@@ -92,8 +117,67 @@ export class LearningPageComponent {
   private readonly feedbackSignal = signal('');
   private readonly expandedReadingIdSignal = signal<string | null>(null);
   private readonly revealedWordHintsSignal = signal<Set<string>>(new Set());
+  private readonly onboardingOpenSignal = signal(false);
+  private readonly onboardingStepIndexSignal = signal(0);
+  private onboardingReturnTab: LearningTab = 'words';
   private readonly wordIndexSignal = signal(0);
-  private readonly currentWordSignal = signal<WordCard>(vocabulary.find((word) => word.level === 'A2')!);
+  private readonly currentWordSignal = signal<WordCard>(
+    vocabulary.find((word) => word.level === 'A2')!,
+  );
+
+  readonly onboardingSteps: OnboardingStep[] = [
+    {
+      target: 'language',
+      title: 'Обери мову навчання',
+      description:
+        'Тут перемикайся між німецькою й англійською. У кожної мови окремі слова та збережений прогрес.',
+      icon: '文',
+    },
+    {
+      target: 'level',
+      title: 'Вкажи свій рівень',
+      description:
+        'Обери A2 або B1 — слова, тексти та вправи підлаштуються автоматично. Прогрес різних рівнів не змішується.',
+      icon: 'A2',
+    },
+    {
+      target: 'progress',
+      title: 'Стеж за прогресом',
+      description:
+        'Переглядай вивчені слова, серію днів і календар занять. Денну ціль можна змінити тут у будь-який момент.',
+      icon: '↗',
+    },
+    {
+      target: 'card',
+      title: 'Вчи слова активним способом',
+      description:
+        'Спершу згадай значення, а потім відкрий переклад. «Знаю слово» зарахує його; «Не знаю» залишить для повторення.',
+      icon: '✦',
+    },
+    {
+      target: 'library',
+      title: 'Користуйся словником',
+      description:
+        'Шукай слова, фільтруй за категоріями й додавай потрібні в обране. Словник показує лише вибрану мову та рівень.',
+      icon: '⌕',
+    },
+    {
+      target: 'practice',
+      title: 'Закріплюй у практиці',
+      description:
+        'Тренуй готові фрази, перекладай цілі речення або перевір себе в мініквізі. Практика не змінює словниковий прогрес.',
+      icon: '✧',
+      tab: 'practice',
+    },
+    {
+      target: 'texts',
+      title: 'Читай тексти свого рівня',
+      description:
+        'У розділі є добірка для вибраних мови й рівня. Натискай на підсвічені слова, щоб побачити переклад.',
+      icon: '▤',
+      tab: 'texts',
+    },
+  ];
 
   get selectedWords(): WordCard[] {
     return vocabulary.filter((word) => word.level === this.settings.level());
@@ -131,11 +215,17 @@ export class LearningPageComponent {
 
   readonly paginatedWords = computed(() => {
     const start = (this.wordPageSignal() - 1) * this.wordPageSizeSignal();
-    return this.visibleWordsList().slice(start, start + this.wordPageSizeSignal());
+    return this.visibleWordsList().slice(
+      start,
+      start + this.wordPageSizeSignal(),
+    );
   });
 
   readonly wordPageCount = computed(() =>
-    Math.max(1, Math.ceil(this.visibleWordsList().length / this.wordPageSizeSignal())),
+    Math.max(
+      1,
+      Math.ceil(this.visibleWordsList().length / this.wordPageSizeSignal()),
+    ),
   );
 
   constructor(@Inject(PLATFORM_ID) private readonly platformId: object) {
@@ -143,6 +233,128 @@ export class LearningPageComponent {
       this.settings.restore();
       this.progress.restore(this.settings.language(), this.wordIds);
       this.resetCurrentWord();
+      this.openOnboardingForFirstVisit();
+    });
+  }
+
+  get onboardingOpen(): boolean {
+    return this.onboardingOpenSignal();
+  }
+
+  get onboardingStep(): OnboardingStep {
+    return this.onboardingSteps[this.onboardingStepIndexSignal()];
+  }
+
+  get onboardingStepNumber(): number {
+    return this.onboardingStepIndexSignal() + 1;
+  }
+
+  get onboardingStepPercent(): number {
+    return (this.onboardingStepNumber / this.onboardingSteps.length) * 100;
+  }
+
+  isOnboardingTarget(target: OnboardingTarget): boolean {
+    return this.onboardingOpen && this.onboardingStep.target === target;
+  }
+
+  startOnboarding(): void {
+    this.onboardingReturnTab = this.activeTab;
+    this.onboardingOpenSignal.set(true);
+    this.showOnboardingStep(0);
+  }
+
+  nextOnboardingStep(): void {
+    if (this.onboardingStepIndexSignal() >= this.onboardingSteps.length - 1) {
+      this.finishOnboarding();
+      return;
+    }
+    this.showOnboardingStep(this.onboardingStepIndexSignal() + 1);
+  }
+
+  previousOnboardingStep(): void {
+    if (this.onboardingStepIndexSignal() > 0) {
+      this.showOnboardingStep(this.onboardingStepIndexSignal() - 1);
+    }
+  }
+
+  finishOnboarding(): void {
+    this.onboardingOpenSignal.set(false);
+    this.activeTabSignal.set(this.onboardingReturnTab);
+    if (isPlatformBrowser(this.platformId)) {
+      try {
+        window.localStorage.setItem(ONBOARDING_STORAGE_KEY, 'completed');
+      } catch {
+        // The tour stays dismissed for this session even if storage is unavailable.
+      }
+      requestAnimationFrame(() => {
+        document.getElementById('learning')?.scrollIntoView({
+          behavior: window.matchMedia('(prefers-reduced-motion: reduce)')
+            .matches
+            ? 'auto'
+            : 'smooth',
+          block: 'start',
+        });
+      });
+    }
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  handleOnboardingKeyboard(event: KeyboardEvent): void {
+    if (!this.onboardingOpen) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      this.finishOnboarding();
+      return;
+    }
+    if (event.key !== 'Tab' || !isPlatformBrowser(this.platformId)) return;
+
+    const buttons = Array.from(
+      document.querySelectorAll<HTMLButtonElement>(
+        '.onboarding-dialog button:not([disabled])',
+      ),
+    );
+    if (buttons.length === 0) return;
+    const first = buttons[0];
+    const last = buttons[buttons.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+
+  private openOnboardingForFirstVisit(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    try {
+      if (window.localStorage.getItem(ONBOARDING_STORAGE_KEY) === 'completed')
+        return;
+    } catch {
+      // Show the onboarding when reading storage is unavailable.
+    }
+    this.startOnboarding();
+  }
+
+  private showOnboardingStep(index: number): void {
+    this.onboardingStepIndexSignal.set(index);
+    const step = this.onboardingSteps[index];
+    if (step.tab) this.activeTabSignal.set(step.tab);
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    requestAnimationFrame(() => {
+      const target = document.querySelector<HTMLElement>(
+        `[data-onboarding-target="${step.target}"]`,
+      );
+      target?.scrollIntoView({
+        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches
+          ? 'auto'
+          : 'smooth',
+        block: 'center',
+      });
+      document
+        .querySelector<HTMLButtonElement>('.onboarding-next')
+        ?.focus({ preventScroll: true });
     });
   }
 
@@ -170,8 +382,13 @@ export class LearningPageComponent {
         if (!content) return;
         const bounds = content.getBoundingClientRect();
         if (bounds.bottom <= window.innerHeight && bounds.top >= 0) return;
-        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        content.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'nearest' });
+        const reduceMotion = window.matchMedia(
+          '(prefers-reduced-motion: reduce)',
+        ).matches;
+        content.scrollIntoView({
+          behavior: reduceMotion ? 'auto' : 'smooth',
+          block: 'nearest',
+        });
       });
     }
   }
@@ -289,16 +506,27 @@ export class LearningPageComponent {
   }
 
   readingSegments(paragraph: string, text: LongReadingText): ReadingSegment[] {
-    const words = new Map(text.difficultWords.map((entry) => [this.normalizeReadingWord(entry.word), entry]));
-    const tokens = paragraph.match(/[\p{L}\p{N}’'-]+|[^\p{L}\p{N}’'-]+/gu) ?? [paragraph];
+    const words = new Map(
+      text.difficultWords.map((entry) => [
+        this.normalizeReadingWord(entry.word),
+        entry,
+      ]),
+    );
+    const tokens = paragraph.match(/[\p{L}\p{N}’'-]+|[^\p{L}\p{N}’'-]+/gu) ?? [
+      paragraph,
+    ];
     return tokens.map((token) => ({
       text: token,
-      difficultWord: words.get(this.normalizeReadingWord(token.replace(/^[’'-]+|[’'-]+$/g, ''))),
+      difficultWord: words.get(
+        this.normalizeReadingWord(token.replace(/^[’'-]+|[’'-]+$/g, '')),
+      ),
     }));
   }
 
   toggleReadingText(text: LongReadingText): void {
-    this.expandedReadingIdSignal.set(this.expandedReadingId === text.id ? null : text.id);
+    this.expandedReadingIdSignal.set(
+      this.expandedReadingId === text.id ? null : text.id,
+    );
     this.revealedWordHintsSignal.set(new Set());
   }
 
@@ -310,7 +538,9 @@ export class LearningPageComponent {
   }
 
   isWordHintOpen(text: LongReadingText, word: string): boolean {
-    return this.revealedWordHintsSignal().has(`${text.id}:${this.normalizeReadingWord(word)}`);
+    return this.revealedWordHintsSignal().has(
+      `${text.id}:${this.normalizeReadingWord(word)}`,
+    );
   }
 
   readingMinutes(text: LongReadingText): number {
@@ -318,7 +548,9 @@ export class LearningPageComponent {
   }
 
   private normalizeReadingWord(word: string): string {
-    return word.toLocaleLowerCase(this.learningLanguage === 'de' ? 'de' : 'en').replace(/[.,!?;:()[\]{}“”"„]/g, '');
+    return word
+      .toLocaleLowerCase(this.learningLanguage === 'de' ? 'de' : 'en')
+      .replace(/[.,!?;:()[\]{}“”"„]/g, '');
   }
 
   get learnedCount(): number {
@@ -327,15 +559,20 @@ export class LearningPageComponent {
 
   get progressPercent(): number {
     if (this.selectedLearnedCount === 0) return 0;
-    return Math.max(1, Math.round((this.selectedLearnedCount / this.selectedWords.length) * 100));
+    return Math.max(
+      1,
+      Math.round((this.selectedLearnedCount / this.selectedWords.length) * 100),
+    );
   }
 
   get selectedLearnedCount(): number {
-    return this.selectedWords.filter((word) => this.learned.has(word.id)).length;
+    return this.selectedWords.filter((word) => this.learned.has(word.id))
+      .length;
   }
 
   get selectedFavoriteCount(): number {
-    return this.selectedWords.filter((word) => this.favorites.has(word.id)).length;
+    return this.selectedWords.filter((word) => this.favorites.has(word.id))
+      .length;
   }
 
   get selectedWordCountLabel(): string {
@@ -376,8 +613,10 @@ export class LearningPageComponent {
     const language = this.learningLanguageName.toLocaleLowerCase('uk');
     if (this.progressPercent === 100)
       return `Усі ${this.selectedWordCountGenitive} ${language} вивчено — це неймовірно!`;
-    if (this.selectedLearnedCount === 0) return 'Почни з першого слова — у тебе все вийде!';
-    if (this.todayCount >= this.dailyGoal) return 'Денну ціль виконано. Ти неймовірний(-а)!';
+    if (this.selectedLearnedCount === 0)
+      return 'Почни з першого слова — у тебе все вийде!';
+    if (this.todayCount >= this.dailyGoal)
+      return 'Денну ціль виконано. Ти неймовірний(-а)!';
     return `Маленькі кроки щодня — і ${language} стане звичкою.`;
   }
 
@@ -489,7 +728,10 @@ export class LearningPageComponent {
   }
 
   showPreviousWord(): void {
-    this.setCurrentWord((this.wordIndex - 1 + this.selectedWords.length) % this.selectedWords.length);
+    this.setCurrentWord(
+      (this.wordIndex - 1 + this.selectedWords.length) %
+        this.selectedWords.length,
+    );
   }
 
   showNextWord(): void {
@@ -498,7 +740,11 @@ export class LearningPageComponent {
 
   markLearned(word: WordCard): void {
     const isCurrentWord = word.id === this.currentWord.id;
-    const result = this.progress.markLearned(word.id, this.dailyGoal, this.levelWordIds);
+    const result = this.progress.markLearned(
+      word.id,
+      this.dailyGoal,
+      this.levelWordIds,
+    );
     if (result === 'already') {
       if (isCurrentWord) {
         this.advanceToNextUnlearnedWord(this.wordIndex);
